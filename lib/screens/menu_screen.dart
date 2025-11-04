@@ -4,7 +4,7 @@ import 'dart:html' as html;
 import 'package:flutter/material.dart';
 import 'add_record_screen.dart';
 import 'view_records_screen.dart';
-import 'shops_screen.dart'; // ← 店舗画面ちゃんと使う
+import 'shops_screen.dart';
 import '../database/db_helper_web.dart';
 import '../models/record.dart';
 
@@ -45,6 +45,7 @@ class _MenuScreenState extends State<MenuScreen> {
         .showSnackBar(const SnackBar(content: Text('CSVをエクスポートしました')));
   }
 
+  /// ✅ 店舗を壊さないCSVインポート版
   void _importCSV() {
     final uploadInput = html.FileUploadInputElement()..accept = '.csv';
     uploadInput.click();
@@ -59,17 +60,29 @@ class _MenuScreenState extends State<MenuScreen> {
       reader.onLoadEnd.listen((event) async {
         final text = reader.result as String;
         final lines = const LineSplitter().convert(text);
-        if (lines.length < 2) return;
-
-        final importedRecords = <Record>[];
-        for (int i = 1; i < lines.length; i++) {
-          final cols = lines[i].split(',');
-          if (cols.length < 12) continue;
-          importedRecords.add(Record.fromCsvRow(cols));
+        if (lines.length < 2) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('CSVにデータがありません')),
+          );
+          return;
         }
 
-        for (var record in importedRecords) {
+        for (int i = 1; i < lines.length; i++) {
+          final raw = lines[i].trim();
+          if (raw.isEmpty) continue;
+
+          final cols = raw.split(',');
+          if (cols.length < 12) continue;
+
+          final record = Record.fromCsvRow(cols.map((e) => e.trim()).toList());
+
+          // ✅ レコードを追加
           await dbHelper.insertRecord(record);
+
+          // ✅ 店舗を壊さず、なければ追加
+          if (record.shop.trim().isNotEmpty) {
+            await dbHelper.insertShop(record.shop.trim());
+          }
         }
 
         ScaffoldMessenger.of(context)
@@ -92,12 +105,10 @@ class _MenuScreenState extends State<MenuScreen> {
             _menuButton(context, 'データ閲覧', const ViewRecordsScreen()),
             const SizedBox(height: 12),
 
-            // ✅ 店舗登録が Dummy → 実際の ShopsScreen に
-            _menuButton(context, '店舗登録', ShopsScreen()), // const を外す
+            _menuButton(context, '店舗登録', ShopsScreen()),
 
             const SizedBox(height: 12),
 
-            // ✅ データ一覧はまだ DummyでOKならそのまま
             _menuButton(context, 'データ一覧', const DummyScreen(title: 'データ一覧')),
 
             const SizedBox(height: 24),
@@ -127,7 +138,10 @@ class _MenuScreenState extends State<MenuScreen> {
               child: const Text(
                 '⚠️ 注意 ⚠️\nブラウザの更新やキャッシュ削除でデータが消えることがあります。\n必ずCSVでバックアップしてください。',
                 style: TextStyle(
-                    color: Colors.red, fontSize: 13, fontWeight: FontWeight.bold),
+                  color: Colors.red,
+                  fontSize: 13,
+                  fontWeight: FontWeight.bold,
+                ),
                 textAlign: TextAlign.center,
               ),
             ),
@@ -167,8 +181,12 @@ class _MenuScreenState extends State<MenuScreen> {
   }
 
   Widget _coloredButton(
-      BuildContext context, String title, VoidCallback onPressed,
-      {required Color backgroundColor, required Color textColor}) {
+    BuildContext context,
+    String title,
+    VoidCallback onPressed, {
+    required Color backgroundColor,
+    required Color textColor,
+  }) {
     return SizedBox(
       width: double.infinity,
       child: OutlinedButton(
@@ -184,7 +202,10 @@ class _MenuScreenState extends State<MenuScreen> {
         child: Text(
           title,
           style: TextStyle(
-              color: textColor, fontSize: 16, fontWeight: FontWeight.bold),
+            color: textColor,
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+          ),
         ),
       ),
     );
@@ -199,7 +220,9 @@ class DummyScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text(title)),
-      body: Center(child: Text('ここに$title の機能を実装します', style: const TextStyle(fontSize: 18))),
+      body: Center(
+        child: Text('ここに$title の機能を実装します', style: const TextStyle(fontSize: 18)),
+      ),
     );
   }
 }
