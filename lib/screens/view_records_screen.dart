@@ -1,4 +1,5 @@
 // lib/screens/view_records_screen.dart
+
 import 'package:flutter/material.dart';
 import '../models/record.dart';
 import '../database/db_helper_web.dart';
@@ -23,6 +24,14 @@ class _ViewRecordsScreenState extends State<ViewRecordsScreen> {
 
   Future<void> _loadRecords() async {
     final records = await _dbHelper.getRecords();
+
+    // ✅ 日付で新しい順（降順）にソート
+    records.sort((a, b) {
+      DateTime dateA = DateTime.parse(a.date.replaceAll('/', '-'));
+      DateTime dateB = DateTime.parse(b.date.replaceAll('/', '-'));
+      return dateB.compareTo(dateA);
+    });
+
     setState(() => _records = records);
   }
 
@@ -44,15 +53,19 @@ class _ViewRecordsScreenState extends State<ViewRecordsScreen> {
         ],
       ),
     );
+
     if (confirm == true) {
       final records = await _dbHelper.getRecords();
       if (index < 0 || index >= records.length) return;
+
       records.removeAt(index);
       await _dbHelper.clearAllRecords();
       for (final r in records) {
         await _dbHelper.insertRecord(r);
       }
+
       _loadRecords();
+
       ScaffoldMessenger.of(context)
           .showSnackBar(const SnackBar(content: Text('削除しました')));
     }
@@ -67,16 +80,37 @@ class _ViewRecordsScreenState extends State<ViewRecordsScreen> {
         itemCount: _records.length,
         itemBuilder: (context, index) {
           final r = _records[index];
+
           return Card(
             margin: const EdgeInsets.symmetric(vertical: 6),
             child: ListTile(
               title: Text('${r.date} / ${r.machine}'),
               subtitle: Text(
-                  '店舗: ${r.shop} 総回転数: ${r.totalRotation} 差枚: ${r.diff} BIG: ${r.big} REG: ${r.reg}'),
-              trailing: IconButton(
-                icon: const Icon(Icons.delete, color: Colors.red),
-                onPressed: () => _deleteRecord(index),
+                '店舗: ${r.shop}  台:${r.number}\n'
+                '総回転数: ${r.totalRotation} / 差枚: ${r.diff}\n'
+                'BIG: ${r.big} / REG: ${r.reg}\n'
+                '重複BIG: ${r.bigDup} / 重複REG: ${r.regDup}\n'
+                'チェリー: ${r.cherry} / ぶどう: ${r.grape}',
+                style: const TextStyle(fontSize: 13),
               ),
+
+              // ✅ ゴミ箱に薄い赤背景
+              trailing: GestureDetector(
+                onTap: () => _deleteRecord(index),
+                child: Container(
+                  padding: const EdgeInsets.all(6),
+                  decoration: BoxDecoration(
+                    color: Colors.red.withOpacity(0.15),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.delete,
+                    color: Colors.red,
+                    size: 22,
+                  ),
+                ),
+              ),
+
               onTap: () async {
                 final edit = await showDialog<bool>(
                   context: context,
@@ -97,7 +131,6 @@ class _ViewRecordsScreenState extends State<ViewRecordsScreen> {
                 );
 
                 if (edit == true) {
-                  // 編集モードで AddRecordScreen に遷移
                   await Navigator.push(
                     context,
                     MaterialPageRoute(
