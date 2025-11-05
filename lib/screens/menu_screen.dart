@@ -7,6 +7,7 @@ import 'view_records_screen.dart';
 import 'shops_screen.dart';
 import '../database/db_helper_web.dart';
 import '../models/record.dart';
+import 'data_list/data_list_screen.dart'; // ← 追加
 
 class MenuScreen extends StatefulWidget {
   const MenuScreen({super.key});
@@ -45,7 +46,6 @@ class _MenuScreenState extends State<MenuScreen> {
         .showSnackBar(const SnackBar(content: Text('CSVをエクスポートしました')));
   }
 
-  /// ✅ 店舗を壊さないCSVインポート版
   void _importCSV() {
     final uploadInput = html.FileUploadInputElement()..accept = '.csv';
     uploadInput.click();
@@ -76,10 +76,8 @@ class _MenuScreenState extends State<MenuScreen> {
 
           final record = Record.fromCsvRow(cols.map((e) => e.trim()).toList());
 
-          // ✅ レコードを追加
           await dbHelper.insertRecord(record);
 
-          // ✅ 店舗を壊さず、なければ追加
           if (record.shop.trim().isNotEmpty) {
             await dbHelper.insertShop(record.shop.trim());
           }
@@ -104,17 +102,12 @@ class _MenuScreenState extends State<MenuScreen> {
             const SizedBox(height: 12),
             _menuButton(context, 'データ閲覧', const ViewRecordsScreen()),
             const SizedBox(height: 12),
-
-            _menuButton(context, '店舗登録', ShopsScreen()),
-
+            _menuButton(context, '店舗登録', const ShopsScreen()),
             const SizedBox(height: 12),
-
-            _menuButton(context, 'データ一覧', const DummyScreen(title: 'データ一覧')),
-
+            _menuButton(context, 'データ一覧', const DataListScreen()), // ← ここを変更
             const SizedBox(height: 24),
             const Divider(),
             const SizedBox(height: 12),
-
             _coloredButton(
               context,
               'CSVをエクスポート（保存）',
@@ -131,7 +124,6 @@ class _MenuScreenState extends State<MenuScreen> {
               textColor: Colors.black,
             ),
             const SizedBox(height: 12),
-
             Container(
               padding: const EdgeInsets.all(12),
               color: Colors.red[50],
@@ -146,7 +138,6 @@ class _MenuScreenState extends State<MenuScreen> {
               ),
             ),
             const SizedBox(height: 12),
-
             _coloredButton(
               context,
               '権利について',
@@ -207,21 +198,6 @@ class _MenuScreenState extends State<MenuScreen> {
             fontWeight: FontWeight.bold,
           ),
         ),
-      ),
-    );
-  }
-}
-
-class DummyScreen extends StatelessWidget {
-  final String title;
-  const DummyScreen({super.key, required this.title});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text(title)),
-      body: Center(
-        child: Text('ここに$title の機能を実装します', style: const TextStyle(fontSize: 18)),
       ),
     );
   }
