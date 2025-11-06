@@ -13,7 +13,6 @@ class DataListScreen extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             _todayCard(),
-
             const SizedBox(height: 24),
 
             const Text(
@@ -22,33 +21,23 @@ class DataListScreen extends StatelessWidget {
             ),
             const SizedBox(height: 8),
 
-            // ✅ ダミー履歴3件（今日と同じ見た目で2段構成）
             _historyCard(
               date: "11/05",
               machine: "アイムジャグラー",
               diff: "+850枚",
               games: 4120,
-              payout: 103.2,
-              big: 14, reg: 2, dupBig: 3, dupReg: 5,
-              cherry: 56, grape: 144,
             ),
             _historyCard(
               date: "11/04",
               machine: "マイジャグV",
               diff: "-200枚",
               games: 3250,
-              payout: 98.4,
-              big: 9, reg: 6, dupBig: 1, dupReg: 2,
-              cherry: 40, grape: 130,
             ),
             _historyCard(
               date: "11/03",
               machine: "アイムジャグラー",
               diff: "+50枚",
               games: 2750,
-              payout: 100.8,
-              big: 10, reg: 5, dupBig: 2, dupReg: 1,
-              cherry: 30, grape: 110,
             ),
 
             const SizedBox(height: 24),
@@ -66,7 +55,7 @@ class DataListScreen extends StatelessWidget {
     );
   }
 
-  // ✅ 今日の成績
+  // ✅ 今日の成績カード（あなたの配置案）
   Widget _todayCard() {
     return Card(
       elevation: 4,
@@ -90,10 +79,15 @@ class DataListScreen extends StatelessWidget {
             SizedBox(height: 8),
 
             Text(
-              "BIG 14回 (1/100)   REG 2回 (1/111)   重複BIG 3回 (1/254)   重複REG 5回 (1/50)",
+              "BIG 14回 (1/100)   REG 2回 (1/111)",
               style: TextStyle(fontSize: 14),
             ),
-            SizedBox(height: 6),
+            SizedBox(height: 4),
+            Text(
+              "重複BIG 3回 (1/254)   重複REG 5回 (1/50)",
+              style: TextStyle(fontSize: 14),
+            ),
+            SizedBox(height: 4),
             Text(
               "チェリー 56回 (1/63)   ぶどう 144回 (1/7.58)",
               style: TextStyle(fontSize: 14),
@@ -104,47 +98,44 @@ class DataListScreen extends StatelessWidget {
     );
   }
 
-  /// ✅ 直近履歴のカード（今日と同じ2段構成）
+  // ✅ 履歴カード
   Widget _historyCard({
     required String date,
     required String machine,
     required String diff,
     required int games,
-    required double payout,
-    required int big,
-    required int reg,
-    required int dupBig,
-    required int dupReg,
-    required int cherry,
-    required int grape,
   }) {
-    double rate(int count, int g) => count == 0 ? 0 : g / count;
-
     return Card(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        padding: const EdgeInsets.all(12),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text("📅 $date  $machine  差枚：$diff / ${games}G / ${payout.toStringAsFixed(1)}%",
-                style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 6),
-
-            Text(
-              "BIG $big (1/${rate(big, games).toStringAsFixed(0)})   "
-              "REG $reg (1/${rate(reg, games).toStringAsFixed(0)})   "
-              "重複BIG $dupBig (1/${rate(dupBig, games).toStringAsFixed(0)})   "
-              "重複REG $dupReg (1/${rate(dupReg, games).toStringAsFixed(0)})",
-              style: const TextStyle(fontSize: 12),
+            Expanded(
+              flex: 3,
+              child: Text(
+                "📅 $date",
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
             ),
-
-            const SizedBox(height: 4),
-
-            Text(
-              "チェリー $cherry (1/${rate(cherry, games).toStringAsFixed(0)})   "
-              "ぶどう $grape (1/${rate(grape, games).toStringAsFixed(2)})",
-              style: const TextStyle(fontSize: 12),
+            Expanded(
+              flex: 5,
+              child: Text(machine, overflow: TextOverflow.ellipsis),
+            ),
+            Expanded(
+              flex: 2,
+              child: Text(diff,
+                  textAlign: TextAlign.right,
+                  style: TextStyle(
+                      color: diff.startsWith('-') ? Colors.red : Colors.green,
+                      fontWeight: FontWeight.bold)),
+            ),
+            Expanded(
+              flex: 2,
+              child: Text("${games}G",
+                  textAlign: TextAlign.right,
+                  style: const TextStyle(fontSize: 12)),
             ),
           ],
         ),
@@ -152,6 +143,7 @@ class DataListScreen extends StatelessWidget {
     );
   }
 
+  // ✅ 3列グリッドメニュー
   Widget _gridMenu(BuildContext context) {
     final menuItems = [
       ("日別", Icons.calendar_today),
@@ -165,25 +157,28 @@ class DataListScreen extends StatelessWidget {
     return GridView.count(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      crossAxisCount: 2,
-      crossAxisSpacing: 12,
-      mainAxisSpacing: 12,
-      childAspectRatio: 1.4,
+      crossAxisCount: 3,
+      crossAxisSpacing: 8,
+      mainAxisSpacing: 8,
+      childAspectRatio: 1.2,
       children: menuItems.map((item) {
-        return ElevatedButton(
-          style: ElevatedButton.styleFrom(
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-            padding: const EdgeInsets.all(12),
+        return OutlinedButton(
+          style: OutlinedButton.styleFrom(
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 4),
           ),
           onPressed: () {},
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(item.$2, size: 32),
-              const SizedBox(height: 8),
-              Text(item.$1,
-                  style: const TextStyle(
-                      fontSize: 16, fontWeight: FontWeight.bold)),
+              Icon(item.$2, size: 24),
+              const SizedBox(height: 6),
+              Text(
+                item.$1,
+                style: const TextStyle(
+                    fontSize: 13, fontWeight: FontWeight.bold),
+              ),
             ],
           ),
         );
