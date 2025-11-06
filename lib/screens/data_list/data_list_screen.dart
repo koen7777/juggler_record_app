@@ -15,13 +15,14 @@ class DataListScreen extends StatelessWidget {
             _todayCard(),
 
             const SizedBox(height: 24),
+
             const Text(
               "📅 直近の履歴",
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
 
-            /// ✅ ダミー履歴（確率なしで横並び）
+            // ✅ ダミー履歴3件（今日と同じ見た目で2段構成）
             _historyCard(
               date: "11/05",
               machine: "アイムジャグラー",
@@ -51,11 +52,13 @@ class DataListScreen extends StatelessWidget {
             ),
 
             const SizedBox(height: 24),
+
             const Text(
               "📊 集計メニュー",
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 12),
+
             _gridMenu(context),
           ],
         ),
@@ -63,7 +66,7 @@ class DataListScreen extends StatelessWidget {
     );
   }
 
-  /// ✅ 今日の成績
+  // ✅ 今日の成績
   Widget _todayCard() {
     return Card(
       elevation: 4,
@@ -73,26 +76,35 @@ class DataListScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: const [
-            Text("📅 今日の成績", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+            Text("📅 今日の成績",
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
             SizedBox(height: 10),
-            Text("差枚：+850枚", style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold)),
+
+            Text("差枚：+850枚",
+                style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold)),
             SizedBox(height: 4),
             Text("総回転数：4120G"),
             Text("ペイアウト：103.2%"),
             SizedBox(height: 8),
             Divider(),
             SizedBox(height: 8),
-            Text("BIG 14回 (1/100)   REG 2回 (1/111)   重複BIG 3回 (1/254)   重複REG 5回 (1/50)",
-                style: TextStyle(fontSize: 14)),
+
+            Text(
+              "BIG 14回 (1/100)   REG 2回 (1/111)   重複BIG 3回 (1/254)   重複REG 5回 (1/50)",
+              style: TextStyle(fontSize: 14),
+            ),
             SizedBox(height: 6),
-            Text("チェリー 56回 (1/63)   ぶどう 144回 (1/7.58)", style: TextStyle(fontSize: 14)),
+            Text(
+              "チェリー 56回 (1/63)   ぶどう 144回 (1/7.58)",
+              style: TextStyle(fontSize: 14),
+            ),
           ],
         ),
       ),
     );
   }
 
-  /// ✅ 直近履歴カード（回数のみ 横1列）
+  /// ✅ 直近履歴のカード（今日と同じ2段構成）
   Widget _historyCard({
     required String date,
     required String machine,
@@ -106,19 +118,36 @@ class DataListScreen extends StatelessWidget {
     required int cherry,
     required int grape,
   }) {
+    double rate(int count, int g) => count == 0 ? 0 : g / count;
+
     return Card(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Padding(
         padding: const EdgeInsets.all(16),
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text("📅 $date  $machine  差枚：$diff / ${games}G / ${payout.toStringAsFixed(1)}%",
-              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
-          const SizedBox(height: 6),
-          Text(
-            "BIG $big  REG $reg  重複BIG $dupBig  重複REG $dupReg  チェリー $cherry  ぶどう $grape",
-            style: const TextStyle(fontSize: 12),
-          ),
-        ]),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text("📅 $date  $machine  差枚：$diff / ${games}G / ${payout.toStringAsFixed(1)}%",
+                style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 6),
+
+            Text(
+              "BIG $big (1/${rate(big, games).toStringAsFixed(0)})   "
+              "REG $reg (1/${rate(reg, games).toStringAsFixed(0)})   "
+              "重複BIG $dupBig (1/${rate(dupBig, games).toStringAsFixed(0)})   "
+              "重複REG $dupReg (1/${rate(dupReg, games).toStringAsFixed(0)})",
+              style: const TextStyle(fontSize: 12),
+            ),
+
+            const SizedBox(height: 4),
+
+            Text(
+              "チェリー $cherry (1/${rate(cherry, games).toStringAsFixed(0)})   "
+              "ぶどう $grape (1/${rate(grape, games).toStringAsFixed(2)})",
+              style: const TextStyle(fontSize: 12),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -152,7 +181,9 @@ class DataListScreen extends StatelessWidget {
             children: [
               Icon(item.$2, size: 32),
               const SizedBox(height: 8),
-              Text(item.$1, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+              Text(item.$1,
+                  style: const TextStyle(
+                      fontSize: 16, fontWeight: FontWeight.bold)),
             ],
           ),
         );
