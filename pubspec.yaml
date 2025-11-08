@@ -13,8 +13,9 @@ dependencies:
   shared_preferences: ^2.1.0
   flutter_localizations:
     sdk: flutter
-  intl: ^0.20.2      # ← Flutter SDK に合わせた最新版
+  intl: ^0.20.2
   table_calendar: ^3.0.9
+  fl_chart: ^0.68.0     # ← ← ← ★これを追加！
 
 dev_dependencies:
   flutter_test:

@@ -1,6 +1,8 @@
+// lib/screens/data_list/data_list_screen.dart
 import 'package:flutter/material.dart';
 import '../../database/db_helper_web.dart';
 import '../../models/record.dart';
+import 'graph_screen.dart'; // GraphScreen をインポート
 
 class DataListScreen extends StatefulWidget {
   const DataListScreen({super.key});
@@ -38,7 +40,20 @@ class _DataListScreenState extends State<DataListScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            _todayCard(todayRecord),
+            // 今日の成績カードをタップ可能に
+            GestureDetector(
+              onTap: hasData
+                  ? () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => GraphScreen(records: _records),
+                        ),
+                      );
+                    }
+                  : null,
+              child: _todayCard(todayRecord),
+            ),
             const SizedBox(height: 24),
 
             const Text(
