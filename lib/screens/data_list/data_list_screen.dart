@@ -19,7 +19,6 @@ class _DataListScreenState extends State<DataListScreen> {
     _loadRecords();
   }
 
-  // ✅ 最新日付が先頭になるように読み込み
   Future<void> _loadRecords() async {
     final records = await _db.getRecords();
     setState(() {
@@ -30,7 +29,7 @@ class _DataListScreenState extends State<DataListScreen> {
   @override
   Widget build(BuildContext context) {
     final hasData = _records.isNotEmpty;
-    final todayRecord = hasData ? _records.first : null; // ✅ 最新データを今日扱い
+    final todayRecord = hasData ? _records.first : null; // 最新データを今日扱い
 
     return Scaffold(
       appBar: AppBar(title: const Text('データ一覧（Dashboard）')),
@@ -49,7 +48,7 @@ class _DataListScreenState extends State<DataListScreen> {
             const SizedBox(height: 8),
 
             if (hasData)
-              ..._records.take(3).map((r) => _historyCard(r)).toList() // ✅ そのまま上から3件
+              ..._records.take(3).map((r) => _historyCard(r)).toList()
             else
               const Center(child: Text("データがありません")),
 
@@ -68,7 +67,7 @@ class _DataListScreenState extends State<DataListScreen> {
     );
   }
 
-  // ✅ 今日の成績カード
+  // 今日の成績カード
   Widget _todayCard(Record? record) {
     if (record == null) {
       return const Card(
@@ -79,7 +78,6 @@ class _DataListScreenState extends State<DataListScreen> {
       );
     }
 
-    // 出現率・ペイアウト計算（保存ではなく計算表示のみ）
     final bigRate = record.big == 0
         ? "-"
         : "1/${(record.totalRotation / record.big).toStringAsFixed(0)}";
@@ -99,9 +97,9 @@ class _DataListScreenState extends State<DataListScreen> {
         ? "-"
         : "1/${(record.totalRotation / record.grape).toStringAsFixed(2)}";
 
-    final payout = record.totalRotation == 0
-        ? "-"
-        : "${((record.diff / (record.totalRotation * 3)) * 100 + 100).toStringAsFixed(1)}%";
+    final payoutValue = record.totalRotation == 0
+        ? 0.0
+        : ((record.diff / (record.totalRotation * 3)) * 100 + 100);
 
     return Card(
       elevation: 4,
@@ -115,12 +113,32 @@ class _DataListScreenState extends State<DataListScreen> {
                 style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
             const SizedBox(height: 10),
 
-            Text("差枚：${record.diff >= 0 ? '+' : ''}${record.diff}枚",
-                style:
-                    const TextStyle(fontSize: 26, fontWeight: FontWeight.bold)),
+            Row(
+              children: [
+                const Text("差枚：", style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold)),
+                Text(
+                  "${record.diff >= 0 ? '+' : ''}${record.diff}枚",
+                  style: TextStyle(
+                    fontSize: 26,
+                    fontWeight: FontWeight.bold,
+                    color: record.diff < 0 ? Colors.red : Colors.black,
+                  ),
+                ),
+              ],
+            ),
             const SizedBox(height: 4),
             Text("総回転数：${record.totalRotation}G"),
-            Text("ペイアウト：$payout"),
+            Row(
+              children: [
+                const Text("ペイアウト率："),
+                Text(
+                  "${payoutValue.toStringAsFixed(1)}%",
+                  style: TextStyle(
+                    color: payoutValue < 100 ? Colors.red : Colors.black,
+                  ),
+                ),
+              ],
+            ),
             const SizedBox(height: 8),
             const Divider(),
             const SizedBox(height: 8),
@@ -141,9 +159,11 @@ class _DataListScreenState extends State<DataListScreen> {
     );
   }
 
-  // ✅ 履歴カード（直近3件）
+  // 履歴カード（直近3件）
   Widget _historyCard(Record record) {
-    final diffText = "${record.diff >= 0 ? '+' : ''}${record.diff}枚";
+    final payoutValue = record.totalRotation == 0
+        ? 0.0
+        : ((record.diff / (record.totalRotation * 3)) * 100 + 100);
 
     return Card(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -165,17 +185,32 @@ class _DataListScreenState extends State<DataListScreen> {
             ),
             Expanded(
               flex: 2,
-              child: Text(diffText,
-                  textAlign: TextAlign.right,
-                  style: TextStyle(
-                      color: record.diff < 0 ? Colors.red : Colors.green,
-                      fontWeight: FontWeight.bold)),
+              child: Text(
+                "${record.diff >= 0 ? '+' : ''}${record.diff}枚",
+                textAlign: TextAlign.right,
+                style: TextStyle(
+                  color: record.diff < 0 ? Colors.red : Colors.black,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ),
             Expanded(
               flex: 2,
-              child: Text("${record.totalRotation}G",
-                  textAlign: TextAlign.right,
-                  style: const TextStyle(fontSize: 12)),
+              child: Text(
+                "${record.totalRotation}G",
+                textAlign: TextAlign.right,
+                style: const TextStyle(fontSize: 12),
+              ),
+            ),
+            Expanded(
+              flex: 2,
+              child: Text(
+                "${payoutValue.toStringAsFixed(1)}%",
+                textAlign: TextAlign.right,
+                style: TextStyle(
+                  color: payoutValue < 100 ? Colors.red : Colors.black,
+                ),
+              ),
             ),
           ],
         ),
@@ -183,7 +218,7 @@ class _DataListScreenState extends State<DataListScreen> {
     );
   }
 
-  // ✅ 固定の3列メニュー
+  // 固定の3列メニュー
   Widget _gridMenu(BuildContext context) {
     final menuItems = [
       ("日別", Icons.calendar_today),
