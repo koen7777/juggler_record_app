@@ -4,7 +4,7 @@ class Record {
   final String shop;
   final String number; // 台番号
   final int totalRotation; // 総回転数
-  final int diff;
+  final int diff; // 差枚
   final int big;
   final int reg;
   final int bigDup;
@@ -27,7 +27,6 @@ class Record {
     required this.grape,
   });
 
-  // Map形式（DBやJSON用）
   Map<String, dynamic> toMap() => {
         'date': date,
         'machine': machine,
@@ -44,9 +43,9 @@ class Record {
       };
 
   factory Record.fromMap(Map<String, dynamic> map) => Record(
-        date: map['date'],
-        machine: map['machine'],
-        shop: map['shop'],
+        date: map['date'] ?? '',
+        machine: map['machine'] ?? '',
+        shop: map['shop'] ?? '',
         number: map['number'] ?? '',
         totalRotation: map['totalRotation'] ?? 0,
         diff: map['diff'] ?? 0,
@@ -58,7 +57,6 @@ class Record {
         grape: map['grape'] ?? 0,
       );
 
-  // CSV用
   List<String> toCsvRow() => [
         date,
         machine,
@@ -89,10 +87,14 @@ class Record {
         grape: int.tryParse(cols[11]) ?? 0,
       );
 
-  // ----------------------
-  // Web保存用：JSON形式
-  // ----------------------
   Map<String, dynamic> toJson() => toMap();
-
   factory Record.fromJson(Map<String, dynamic> json) => Record.fromMap(json);
+
+  // ✅ ペイアウト率（出玉率）
+  double get payout {
+    if (totalRotation <= 0) return 0;
+    final inCoin = totalRotation * 3;
+    final outCoin = inCoin + diff;
+    return (outCoin / inCoin) * 100;
+  }
 }
