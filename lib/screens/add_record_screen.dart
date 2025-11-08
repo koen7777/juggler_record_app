@@ -122,21 +122,30 @@ class _AddRecordScreenState extends State<AddRecordScreen> {
     );
   }
 
-  Widget _buildNumField(String label, TextEditingController c, {bool required = true}) =>
-    Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
-      child: TextFormField(
-        controller: c,
-        decoration: InputDecoration(labelText: label, border: const OutlineInputBorder()),
-        keyboardType: TextInputType.number,
-        inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-        validator: (v) {
-          if (!required) return null;
-          if (v == null || v.isEmpty) return '必須項目です';
-          return null;
-        },
-      ),
-    );
+  Widget _buildNumField(
+    String label,
+    TextEditingController c, {
+    bool required = true,
+    bool allowNegative = false,
+  }) =>
+      Padding(
+        padding: const EdgeInsets.symmetric(vertical: 6),
+        child: TextFormField(
+          controller: c,
+          decoration: InputDecoration(labelText: label, border: const OutlineInputBorder()),
+          keyboardType: allowNegative
+              ? const TextInputType.numberWithOptions(signed: true)
+              : TextInputType.number,
+          inputFormatters: allowNegative
+              ? [FilteringTextInputFormatter.allow(RegExp(r'[-0-9]'))]
+              : [FilteringTextInputFormatter.digitsOnly],
+          validator: (v) {
+            if (!required) return null;
+            if (v == null || v.isEmpty) return '必須項目です';
+            return null;
+          },
+        ),
+      );
 
   Future<void> _saveRecord() async {
     if (!_formKey.currentState!.validate()) return;
@@ -172,63 +181,63 @@ class _AddRecordScreenState extends State<AddRecordScreen> {
 
   @override
   Widget build(BuildContext context) => AbsorbPointer(
-    absorbing: _saving,
-    child: Scaffold(
-      appBar: AppBar(title: Text(widget.recordIndex != null ? 'データ編集' : 'データ入力')),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            children: [
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 6),
-                child: TextFormField(
-                  controller: _dateController,
-                  readOnly: true,
-                  decoration: const InputDecoration(labelText: '日付', border: OutlineInputBorder()),
-                  onTap: _pickDate,
-                ),
-              ),
-              _buildMachineDropdown(),
-              _buildShopDropdown(),
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 6),
-                child: TextFormField(
-                  controller: _numberController,
-                  decoration: const InputDecoration(labelText: '台番号（任意）', border: OutlineInputBorder()),
-                  keyboardType: TextInputType.number,
-                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                ),
-              ),
-              _buildNumField('総回転数', _rotationController),
-              _buildNumField('差枚', _diffController),
-              _buildNumField('BIG回数', _bigController, required: false),
-              _buildNumField('REG回数', _regController, required: false),
-              _buildNumField('重複BIG', _dupBigController, required: false),
-              _buildNumField('重複REG', _dupRegController, required: false),
-              _buildNumField('チェリー', _cherryController, required: false),
-              _buildNumField('ぶどう', _grapeController, required: false),
-              const SizedBox(height: 12),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: _saveRecord,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.green, // 緑背景
-                    foregroundColor: Colors.white, // 白文字
-                    padding: const EdgeInsets.symmetric(vertical: 18),
+        absorbing: _saving,
+        child: Scaffold(
+          appBar: AppBar(title: Text(widget.recordIndex != null ? 'データ編集' : 'データ入力')),
+          body: SingleChildScrollView(
+            padding: const EdgeInsets.all(16),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 6),
+                    child: TextFormField(
+                      controller: _dateController,
+                      readOnly: true,
+                      decoration: const InputDecoration(labelText: '日付', border: OutlineInputBorder()),
+                      onTap: _pickDate,
+                    ),
                   ),
-                  child: Text(
-                    widget.recordIndex != null ? '更新' : '保存',
-                    style: const TextStyle(fontSize: 18),
+                  _buildMachineDropdown(),
+                  _buildShopDropdown(),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 6),
+                    child: TextFormField(
+                      controller: _numberController,
+                      decoration: const InputDecoration(labelText: '台番号（任意）', border: OutlineInputBorder()),
+                      keyboardType: TextInputType.number,
+                      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                    ),
                   ),
-                ),
+                  _buildNumField('総回転数', _rotationController),
+                  _buildNumField('差枚', _diffController, allowNegative: true), // ←マイナス対応
+                  _buildNumField('BIG回数', _bigController, required: false),
+                  _buildNumField('REG回数', _regController, required: false),
+                  _buildNumField('重複BIG', _dupBigController, required: false),
+                  _buildNumField('重複REG', _dupRegController, required: false),
+                  _buildNumField('チェリー', _cherryController, required: false),
+                  _buildNumField('ぶどう', _grapeController, required: false),
+                  const SizedBox(height: 12),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: _saveRecord,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.green,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 18),
+                      ),
+                      child: Text(
+                        widget.recordIndex != null ? '更新' : '保存',
+                        style: const TextStyle(fontSize: 18),
+                      ),
+                    ),
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
         ),
-      ),
-    ),
-  );
+      );
 }
