@@ -1,8 +1,17 @@
-// lib/screens/data_list/data_list_screen.dart
 import 'package:flutter/material.dart';
 import '../../database/db_helper_web.dart';
 import '../../models/record.dart';
-import 'graph_screen.dart'; // GraphScreen をインポート
+import 'graph_screen.dart';
+import '../aggregation/daily_summary_screen.dart'; // ← 日別集計画面の追加
+
+// 🟢 メニュー用クラス
+class MenuItem {
+  final String title;
+  final IconData icon;
+  final Widget? screen;
+
+  MenuItem(this.title, this.icon, this.screen);
+}
 
 class DataListScreen extends StatefulWidget {
   const DataListScreen({super.key});
@@ -40,7 +49,7 @@ class _DataListScreenState extends State<DataListScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // 今日の成績カードをタップ可能に
+            // 📊 今日の成績カードをタップでGraphScreenへ遷移
             GestureDetector(
               onTap: hasData
                   ? () {
@@ -82,7 +91,7 @@ class _DataListScreenState extends State<DataListScreen> {
     );
   }
 
-  // 今日の成績カード
+  // 🟩 今日の成績カード
   Widget _todayCard(Record? record) {
     if (record == null) {
       return const Card(
@@ -127,10 +136,11 @@ class _DataListScreenState extends State<DataListScreen> {
             const Text("📅 今日の成績",
                 style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
             const SizedBox(height: 10),
-
             Row(
               children: [
-                const Text("差枚：", style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold)),
+                const Text("差枚：",
+                    style:
+                        TextStyle(fontSize: 26, fontWeight: FontWeight.bold)),
                 Text(
                   "${record.diff >= 0 ? '+' : ''}${record.diff}枚",
                   style: TextStyle(
@@ -157,7 +167,6 @@ class _DataListScreenState extends State<DataListScreen> {
             const SizedBox(height: 8),
             const Divider(),
             const SizedBox(height: 8),
-
             Text("BIG ${record.big}回 ($bigRate)   REG ${record.reg}回 ($regRate)",
                 style: const TextStyle(fontSize: 14)),
             const SizedBox(height: 4),
@@ -165,8 +174,7 @@ class _DataListScreenState extends State<DataListScreen> {
                 "重複BIG ${record.bigDup}回 ($bigDupRate)   重複REG ${record.regDup}回 ($regDupRate)",
                 style: const TextStyle(fontSize: 14)),
             const SizedBox(height: 4),
-            Text(
-                "チェリー ${record.cherry}回 ($cherryRate)   ぶどう ${record.grape}回 ($grapeRate)",
+            Text("チェリー ${record.cherry}回 ($cherryRate)   ぶどう ${record.grape}回 ($grapeRate)",
                 style: const TextStyle(fontSize: 14)),
           ],
         ),
@@ -174,7 +182,7 @@ class _DataListScreenState extends State<DataListScreen> {
     );
   }
 
-  // 履歴カード（直近3件）
+  // 🟩 履歴カード（直近3件）
   Widget _historyCard(Record record) {
     final payoutValue = record.totalRotation == 0
         ? 0.0
@@ -188,16 +196,10 @@ class _DataListScreenState extends State<DataListScreen> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Expanded(
-              flex: 3,
-              child: Text(
-                "📅 ${record.date}",
-                style: const TextStyle(fontWeight: FontWeight.bold),
-              ),
-            ),
-            Expanded(
-              flex: 5,
-              child: Text(record.machine, overflow: TextOverflow.ellipsis),
-            ),
+                flex: 3,
+                child: Text("📅 ${record.date}",
+                    style: const TextStyle(fontWeight: FontWeight.bold))),
+            Expanded(flex: 5, child: Text(record.machine, overflow: TextOverflow.ellipsis)),
             Expanded(
               flex: 2,
               child: Text(
@@ -211,20 +213,15 @@ class _DataListScreenState extends State<DataListScreen> {
             ),
             Expanded(
               flex: 2,
-              child: Text(
-                "${record.totalRotation}G",
-                textAlign: TextAlign.right,
-                style: const TextStyle(fontSize: 12),
-              ),
+              child: Text("${record.totalRotation}G",
+                  textAlign: TextAlign.right, style: const TextStyle(fontSize: 12)),
             ),
             Expanded(
               flex: 2,
               child: Text(
                 "${payoutValue.toStringAsFixed(1)}%",
                 textAlign: TextAlign.right,
-                style: TextStyle(
-                  color: payoutValue < 100 ? Colors.red : Colors.black,
-                ),
+                style: TextStyle(color: payoutValue < 100 ? Colors.red : Colors.black),
               ),
             ),
           ],
@@ -233,15 +230,15 @@ class _DataListScreenState extends State<DataListScreen> {
     );
   }
 
-  // 固定の3列メニュー
+  // 🟩 固定の3列メニュー（クラス化して修正版）
   Widget _gridMenu(BuildContext context) {
     final menuItems = [
-      ("日別", Icons.calendar_today),
-      ("機種別", Icons.games),
-      ("店舗別", Icons.store),
-      ("通算", Icons.assessment),
-      ("末尾別", Icons.tag),
-      ("特定日", Icons.star),
+      MenuItem("日別", Icons.calendar_today, const DailySummaryScreen()),
+      MenuItem("機種別", Icons.games, null),
+      MenuItem("店舗別", Icons.store, null),
+      MenuItem("通算", Icons.assessment, null),
+      MenuItem("末尾別", Icons.tag, null),
+      MenuItem("特定日", Icons.star, null),
     ];
 
     return GridView.count(
@@ -254,25 +251,24 @@ class _DataListScreenState extends State<DataListScreen> {
       children: menuItems.map((item) {
         return OutlinedButton(
           style: OutlinedButton.styleFrom(
-            shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 4),
           ),
           onPressed: () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text("${item.$1}：開発中です")),
-            );
+            if (item.screen != null) {
+              Navigator.push(context, MaterialPageRoute(builder: (_) => item.screen!));
+            } else {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text("${item.title}：開発中です")),
+              );
+            }
           },
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(item.$2, size: 24),
+              Icon(item.icon, size: 24),
               const SizedBox(height: 6),
-              Text(
-                item.$1,
-                style: const TextStyle(
-                    fontSize: 13, fontWeight: FontWeight.bold),
-              ),
+              Text(item.title, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
             ],
           ),
         );
