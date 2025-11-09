@@ -17,6 +17,7 @@ class _GraphScreenState extends State<GraphScreen> {
   @override
   Widget build(BuildContext context) {
     final records = widget.records;
+
     if (records.isEmpty) {
       return Scaffold(
         appBar: AppBar(title: const Text("📊 グラフ表示")),
@@ -24,9 +25,18 @@ class _GraphScreenState extends State<GraphScreen> {
       );
     }
 
-    // 🔹 最新7件（左が古い・右が新しい）
-    final last7 = records.take(7).toList().reversed.toList();
-    final latest = records.first;
+    // 日付順にソート（古い順）
+    final sortedRecords = records.toList()
+      ..sort((a, b) => DateTime.parse(a.date.replaceAll("/", "-"))
+          .compareTo(DateTime.parse(b.date.replaceAll("/", "-"))));
+
+    // 最新7件のみ取得（古い順で表示）
+    final last7 = sortedRecords.length <= 7
+        ? sortedRecords
+        : sortedRecords.sublist(sortedRecords.length - 7);
+
+    // 最新データ（円グラフ用）
+    final latest = sortedRecords.last;
 
     return Scaffold(
       appBar: AppBar(title: const Text("📊 グラフ表示")),
@@ -34,7 +44,7 @@ class _GraphScreenState extends State<GraphScreen> {
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            // 🔘 グラフ切替ボタン
+            // グラフ切替ボタン
             Container(
               decoration: BoxDecoration(
                 color: Colors.grey[200],
@@ -68,7 +78,6 @@ class _GraphScreenState extends State<GraphScreen> {
     );
   }
 
-  /// 🔘 切替ボタンUI
   Widget _buildToggleButton({
     required String label,
     required bool selected,
@@ -100,7 +109,6 @@ class _GraphScreenState extends State<GraphScreen> {
     );
   }
 
-  /// 📈 差枚推移ラインチャート（±100余裕あり・左古い→右新しい）
   Widget _buildLineChart(List<Record> last7) {
     final diffs = last7.map((r) => r.diff).toList();
     final minDiff = diffs.reduce((a, b) => a < b ? a : b);
@@ -132,17 +140,20 @@ class _GraphScreenState extends State<GraphScreen> {
                 getTitlesWidget: (value, _) {
                   final index = value.toInt();
                   if (index < 0 || index >= last7.length) return const SizedBox();
-                  return Text(
-                    last7[index].date.split("/").last,
-                    style: const TextStyle(fontSize: 10),
-                  );
+                  final day = last7[index].date.split("/").last;
+                  return Text(day, style: const TextStyle(fontSize: 10));
                 },
               ),
             ),
-            rightTitles:
-                const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-            topTitles:
-                const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+            rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+            topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+          ),
+          borderData: FlBorderData(
+            show: true,
+            border: const Border(
+              left: BorderSide(),
+              bottom: BorderSide(),
+            ),
           ),
           lineBarsData: [
             LineChartBarData(
@@ -160,19 +171,11 @@ class _GraphScreenState extends State<GraphScreen> {
               ),
             ),
           ],
-          borderData: FlBorderData(
-            show: true,
-            border: const Border(
-              left: BorderSide(),
-              bottom: BorderSide(),
-            ),
-          ),
         ),
       ),
     );
   }
 
-  /// 🥧 BIG/REG円グラフ（縮小版）
   Widget _buildPieChart(Record record) {
     final big = record.big;
     final bigDup = record.bigDup;
@@ -196,7 +199,7 @@ class _GraphScreenState extends State<GraphScreen> {
             style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
         const SizedBox(height: 16),
         SizedBox(
-          height: 230, // 🔽 スマホオーバーフロー対策
+          height: 230,
           child: PieChart(
             PieChartData(
               sectionsSpace: 2,
