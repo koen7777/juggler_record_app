@@ -4,6 +4,8 @@ import 'package:intl/intl.dart';
 import 'package:table_calendar/table_calendar.dart';
 import '../../database/db_helper_web.dart';
 import '../../models/record.dart';
+import '../data_list/graph_screen.dart'; // GraphScreen を正しい場所からインポート
+
 
 class DailySummaryScreen extends StatefulWidget {
   const DailySummaryScreen({super.key});
@@ -148,7 +150,7 @@ class _DailySummaryScreenState extends State<DailySummaryScreen> {
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Text("📊 選択期間合計 (${record.date})",
                 style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
@@ -164,6 +166,43 @@ class _DailySummaryScreenState extends State<DailySummaryScreen> {
             Text(
                 "BIG合計: $bigTotal回  確率: $bigTotalRate  REG合計: $regTotal回  確率: $regTotalRate"),
             Text("チェリー ${record.cherry}回 ($cherryRate)  ぶどう ${record.grape}回 ($grapeRate)"),
+            const SizedBox(height: 12),
+            // ← ここに円形グラフボタンを追加
+            Center(
+              child: GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (_) =>
+                            GraphScreen(records: _displayRecords)),
+                  );
+                },
+                child: Container(
+                  width: 60,
+                  height: 60,
+                  decoration: BoxDecoration(
+                    color: Colors.orange,
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                          color: Colors.orange.withOpacity(0.4),
+                          blurRadius: 4,
+                          offset: const Offset(0, 2)),
+                    ],
+                  ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: const [
+                      Icon(Icons.show_chart, color: Colors.white),
+                      SizedBox(height: 2),
+                      Text("グラフ",
+                          style: TextStyle(color: Colors.white, fontSize: 10)),
+                    ],
+                  ),
+                ),
+              ),
+            ),
           ],
         ),
       ),
@@ -193,36 +232,36 @@ class _DailySummaryScreenState extends State<DailySummaryScreen> {
             ),
             const SizedBox(height: 8),
             // プリセット範囲（緑ボタン）
-       Wrap(
-  spacing: 8,
-  alignment: WrapAlignment.center,
-  children: [
-    ElevatedButton(
-      onPressed: () => _setQuickRange(3),
-      style: ElevatedButton.styleFrom(
-        backgroundColor: Colors.green,
-        foregroundColor: Colors.white, // ← ここで文字を白に
-      ),
-      child: const Text("3日間"),
-    ),
-    ElevatedButton(
-      onPressed: () => _setQuickRange(7),
-      style: ElevatedButton.styleFrom(
-        backgroundColor: Colors.green,
-        foregroundColor: Colors.white,
-      ),
-      child: const Text("1週間"),
-    ),
-    ElevatedButton(
-      onPressed: () => _setQuickRange(30),
-      style: ElevatedButton.styleFrom(
-        backgroundColor: Colors.green,
-        foregroundColor: Colors.white,
-      ),
-      child: const Text("1か月"),
-    ),
-  ],
-),
+            Wrap(
+              spacing: 8,
+              alignment: WrapAlignment.center,
+              children: [
+                ElevatedButton(
+                  onPressed: () => _setQuickRange(3),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.green,
+                    foregroundColor: Colors.white,
+                  ),
+                  child: const Text("3日間"),
+                ),
+                ElevatedButton(
+                  onPressed: () => _setQuickRange(7),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.green,
+                    foregroundColor: Colors.white,
+                  ),
+                  child: const Text("1週間"),
+                ),
+                ElevatedButton(
+                  onPressed: () => _setQuickRange(30),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.green,
+                    foregroundColor: Colors.white,
+                  ),
+                  child: const Text("1か月"),
+                ),
+              ],
+            ),
             const SizedBox(height: 16),
             // 選択期間合計
             _summaryCard(summaryRecord),
