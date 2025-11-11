@@ -4,8 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:table_calendar/table_calendar.dart';
 import '../../database/db_helper_web.dart';
 import '../../models/record.dart';
-import '../data_list/graph_screen.dart'; // GraphScreen を正しい場所からインポート
-
+import '../data_list/graph_screen.dart'; // ← graph_screen の正しいパスに修正
 
 class DailySummaryScreen extends StatefulWidget {
   const DailySummaryScreen({super.key});
@@ -154,6 +153,11 @@ class _DailySummaryScreenState extends State<DailySummaryScreen> {
           children: [
             Text("📊 選択期間合計 (${record.date})",
                 style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 4),
+            const Text(
+              "※この期間のデータをグラフ表示できます",
+              style: TextStyle(fontSize: 12, color: Colors.grey),
+            ),
             const SizedBox(height: 8),
             Text(
                 "差枚: ${record.diff >= 0 ? '+' : ''}${record.diff}枚  総回転: $totalRotation G"),
@@ -167,7 +171,8 @@ class _DailySummaryScreenState extends State<DailySummaryScreen> {
                 "BIG合計: $bigTotal回  確率: $bigTotalRate  REG合計: $regTotal回  確率: $regTotalRate"),
             Text("チェリー ${record.cherry}回 ($cherryRate)  ぶどう ${record.grape}回 ($grapeRate)"),
             const SizedBox(height: 12),
-            // ← ここに円形グラフボタンを追加
+
+            // 円形グラフボタン（変更なし）
             Center(
               child: GestureDetector(
                 onTap: () {

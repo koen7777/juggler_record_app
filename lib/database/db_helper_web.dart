@@ -41,17 +41,37 @@ class DBHelperWeb {
 
   Future<void> insertRecord(Record record) async {
     final records = await getRecords();
-    records.add(record);
-    _sortRecordsByDate(records); // ✅ 追加後に並び替え
-    html.window.localStorage[_recordsKey] =
-        jsonEncode(records.map((r) => r.toMap()).toList());
+    // 重複チェック
+    if (!_exists(records, record)) {
+      records.add(record);
+      _sortRecordsByDate(records);
+      html.window.localStorage[_recordsKey] =
+          jsonEncode(records.map((r) => r.toMap()).toList());
+    }
   }
 
   Future<void> saveAllRecords(List<Record> records) async {
-    // ✅ CSV読み込み時などに使う
-    final sorted = _sortRecordsByDate(records); // ✅ 並び替えをここで確実に実施
+    final existing = await getRecords();
+    final merged = [...existing];
+
+    for (var record in records) {
+      if (!_exists(merged, record)) {
+        merged.add(record);
+      }
+    }
+
+    final sorted = _sortRecordsByDate(merged);
     html.window.localStorage[_recordsKey] =
         jsonEncode(sorted.map((r) => r.toMap()).toList());
+  }
+
+  // ✅ 重複チェック用関数
+  bool _exists(List<Record> records, Record record) {
+    return records.any((r) =>
+        r.date == record.date &&
+        r.machine == record.machine &&
+        r.shop == record.shop &&
+        r.number == record.number);
   }
 
   Future<void> updateRecord(int index, Record record) async {
@@ -107,5 +127,36 @@ class DBHelperWeb {
 
   Future<void> clearAllShops() async {
     html.window.localStorage.remove(_shopsKey);
+  }
+
+  // ----------------------
+  // CSV読み込み用ヘルパー
+  // ----------------------
+  Future<void> importCsv(String csvText) async {
+    final lines = csvText.split('\n').map((l) => l.trim()).where((l) => l.isNotEmpty).toList();
+    if (lines.isEmpty) return;
+    // ヘッダー除外
+    final records = <Record>[];
+    for (var i = 1; i < lines.length; i++) {
+      final cols = lines[i].split(',');
+      if (cols.length < 12) continue;
+      final record = Record(
+        date: cols[0],
+        machine: cols[1],
+        shop: cols[2],
+        number: cols[3],
+        totalRotation: int.tryParse(cols[4]) ?? 0,
+        diff: int.tryParse(cols[5]) ?? 0,
+        big: int.tryParse(cols[6]) ?? 0,
+        reg: int.tryParse(cols[7]) ?? 0,
+        bigDup: int.tryParse(cols[8]) ?? 0,
+        regDup: int.tryParse(cols[9]) ?? 0,
+        cherry: int.tryParse(cols[10]) ?? 0,
+        grape: int.tryParse(cols[11]) ?? 0,
+      );
+      records.add(record);
+    }
+
+    await saveAllRecords(records);
   }
 }
