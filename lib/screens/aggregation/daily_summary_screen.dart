@@ -4,7 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:table_calendar/table_calendar.dart';
 import '../../database/db_helper_web.dart';
 import '../../models/record.dart';
-import '../data_list/graph_screen.dart'; // ← graph_screen の正しいパスに修正
+import '../aggregation/summary_graph_screen.dart'; // 差枚グラフ用画面
 
 class DailySummaryScreen extends StatefulWidget {
   const DailySummaryScreen({super.key});
@@ -172,15 +172,19 @@ class _DailySummaryScreenState extends State<DailySummaryScreen> {
             Text("チェリー ${record.cherry}回 ($cherryRate)  ぶどう ${record.grape}回 ($grapeRate)"),
             const SizedBox(height: 12),
 
-            // 円形グラフボタン（変更なし）
+            // 🔹 差枚グラフボタン
             Center(
               child: GestureDetector(
                 onTap: () {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                        builder: (_) =>
-                            GraphScreen(records: _displayRecords)),
+                      builder: (_) => SummaryGraphScreen(
+                        records: _displayRecords,
+                        startDate: _selectedStartDate,
+                        endDate: _selectedEndDate,
+                      ),
+                    ),
                   );
                 },
                 child: Container(
@@ -236,7 +240,7 @@ class _DailySummaryScreenState extends State<DailySummaryScreen> {
               onTap: _pickDateRange,
             ),
             const SizedBox(height: 8),
-            // プリセット範囲（緑ボタン）
+            // プリセット範囲ボタン
             Wrap(
               spacing: 8,
               alignment: WrapAlignment.center,
@@ -271,7 +275,7 @@ class _DailySummaryScreenState extends State<DailySummaryScreen> {
             // 選択期間合計
             _summaryCard(summaryRecord),
             const SizedBox(height: 16),
-            // 日別データ一覧（折りたたみ）
+            // 日別データ一覧
             const Text(
               "日別データ",
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
@@ -352,7 +356,7 @@ class _DailySummaryScreenState extends State<DailySummaryScreen> {
 }
 
 // ----------------------
-// RangeCalendarPicker：カレンダー範囲選択画面（自由選択可能）
+// RangeCalendarPicker：カレンダー範囲選択画面
 class RangeCalendarPicker extends StatefulWidget {
   final DateTime initialStart;
   final DateTime initialEnd;

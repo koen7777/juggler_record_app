@@ -133,7 +133,11 @@ class DBHelperWeb {
   // CSV読み込み用ヘルパー
   // ----------------------
   Future<void> importCsv(String csvText) async {
-    final lines = csvText.split('\n').map((l) => l.trim()).where((l) => l.isNotEmpty).toList();
+    final lines = csvText
+        .split('\n')
+        .map((l) => l.trim())
+        .where((l) => l.isNotEmpty)
+        .toList();
     if (lines.isEmpty) return;
     // ヘッダー除外
     final records = <Record>[];
@@ -158,5 +162,59 @@ class DBHelperWeb {
     }
 
     await saveAllRecords(records);
+  }
+
+  // ----------------------
+  // CSVエクスポート（日時付きファイル名）
+  // ----------------------
+  void exportRecordsToCsv(List<Record> records) {
+    if (records.isEmpty) return;
+
+    final csvHeader = [
+      '日付',
+      '機種名',
+      '店舗名',
+      '台番号',
+      '総回転数',
+      '差枚',
+      'BIG',
+      'REG',
+      '重複BIG',
+      '重複REG',
+      'チェリー',
+      'ぶどう'
+    ];
+
+    final csvRows = records.map((r) => [
+          r.date,
+          r.machine,
+          r.shop,
+          r.number,
+          r.totalRotation,
+          r.diff,
+          r.big,
+          r.reg,
+          r.bigDup,
+          r.regDup,
+          r.cherry,
+          r.grape
+        ]);
+
+    final csvContent = StringBuffer();
+    csvContent.writeln(csvHeader.join(','));
+    csvContent.writeAll(csvRows.map((row) => row.join(',')), '\n');
+
+    final bytes = utf8.encode(csvContent.toString());
+    final blob = html.Blob([bytes]);
+
+    final now = DateTime.now();
+    final filename =
+        'juggler_data_${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}_${now.hour.toString().padLeft(2, '0')}${now.minute.toString().padLeft(2, '0')}${now.second.toString().padLeft(2, '0')}.csv';
+
+    final url = html.Url.createObjectUrlFromBlob(blob);
+    final anchor = html.AnchorElement(href: url)
+      ..setAttribute('download', filename)
+      ..click();
+    html.Url.revokeObjectUrl(url);
   }
 }
