@@ -20,8 +20,8 @@ class SummaryGraphScreen extends StatefulWidget {
 }
 
 class _SummaryGraphScreenState extends State<SummaryGraphScreen> {
-  bool showCumulative = false; // false = 日別, true = 累計
-  bool showDiffGraph = true; // true = 差枚, false = BIG/REG比率
+  bool showCumulative = false;
+  bool showDiffGraph = true;
 
   @override
   Widget build(BuildContext context) {
@@ -33,7 +33,9 @@ class _SummaryGraphScreenState extends State<SummaryGraphScreen> {
       );
     }
 
-    // 選択期間の日付リスト
+    //---------------------------------
+    // ■ 日付リスト生成
+    //---------------------------------
     final dateList = <String>[];
     for (var d = widget.startDate;
         !d.isAfter(widget.endDate);
@@ -41,14 +43,17 @@ class _SummaryGraphScreenState extends State<SummaryGraphScreen> {
       dateList.add(DateFormat('yyyy/MM/dd').format(d));
     }
 
-    // 日別差枚データマップ
+    //---------------------------------
+    // ■ 差枚データ
+    //---------------------------------
     final diffMap = {for (var r in records) r.date: r.diff};
 
-    // 累計 / 日別用FlSpot
     final diffSpots = <FlSpot>[];
     double cumulative = 0;
+
     for (var i = 0; i < dateList.length; i++) {
       final diff = diffMap[dateList[i]]?.toDouble() ?? 0.0;
+
       if (showCumulative) {
         cumulative += diff;
         diffSpots.add(FlSpot(i.toDouble(), cumulative));
@@ -57,7 +62,7 @@ class _SummaryGraphScreenState extends State<SummaryGraphScreen> {
       }
     }
 
-    // minY/maxY自動スケーリング
+    // minY/maxY
     final yValues = diffSpots.map((e) => e.y).toList();
     double minY = yValues.reduce((a, b) => a < b ? a : b);
     double maxY = yValues.reduce((a, b) => a > b ? a : b);
@@ -65,14 +70,9 @@ class _SummaryGraphScreenState extends State<SummaryGraphScreen> {
     if (range == 0) range = 1000;
     double margin = showCumulative ? range * 0.05 : range * 0.1;
     minY -= margin;
-    maxY += showCumulative ? range * 0.15 : margin;
-    const minMargin = 200.0;
-    if ((maxY - minY) < minMargin * 2) {
-      minY -= minMargin;
-      maxY += minMargin;
-    }
+    maxY += showCumulative ? range * 0.1 : margin;
 
-    // BIG/REG累計
+    //----- 期間累計の BIG/REG -----
     int totalBig = 0, totalBigDup = 0, totalReg = 0, totalRegDup = 0;
     for (var r in records) {
       totalBig += r.big;
@@ -80,63 +80,95 @@ class _SummaryGraphScreenState extends State<SummaryGraphScreen> {
       totalReg += r.reg;
       totalRegDup += r.regDup;
     }
-    final totalCount = totalBig + totalBigDup + totalReg + totalRegDup;
+    final totalCount =
+        totalBig + totalBigDup + totalReg + totalRegDup;
 
+    // パーセンテージ
+    double pct(int v) => totalCount == 0 ? 0 : v / totalCount * 100;
+
+    // ★ 円グラフカラー
+    final bigColor = Colors.red;            // BIG → 赤
+    final bigDupColor = Colors.pink.shade200; // 重複BIG → 薄いピンク
+    final regColor = Colors.blue.shade400;  
+    final regDupColor = Colors.blue.shade700;
+
+    //---------------------------------
+    //  ■ 円グラフ sections（名称修正済み）
+    //---------------------------------
     final pieSections = [
       PieChartSectionData(
-          color: Colors.orange,
-          value: totalBig.toDouble() == 0 ? 0.01 : totalBig.toDouble(),
-          radius: 60,
-          title: ''),
+        value: totalBig.toDouble(),
+        color: bigColor,
+        radius: 65,
+        title: "BIG\n${pct(totalBig).toStringAsFixed(1)}%",
+        titleStyle: const TextStyle(
+            color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
+      ),
       PieChartSectionData(
-          color: Colors.deepOrange,
-          value: totalBigDup.toDouble() == 0 ? 0.01 : totalBigDup.toDouble(),
-          radius: 60,
-          title: ''),
+        value: totalBigDup.toDouble(),
+        color: bigDupColor,
+        radius: 65,
+        title: "重複BIG\n${pct(totalBigDup).toStringAsFixed(1)}%",
+        titleStyle: const TextStyle(
+            color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
+      ),
       PieChartSectionData(
-          color: Colors.blue,
-          value: totalReg.toDouble() == 0 ? 0.01 : totalReg.toDouble(),
-          radius: 60,
-          title: ''),
+        value: totalReg.toDouble(),
+        color: regColor,
+        radius: 65,
+        title: "REG\n${pct(totalReg).toStringAsFixed(1)}%",
+        titleStyle: const TextStyle(
+            color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
+      ),
       PieChartSectionData(
-          color: Colors.lightBlueAccent,
-          value: totalRegDup.toDouble() == 0 ? 0.01 : totalRegDup.toDouble(),
-          radius: 60,
-          title: ''),
+        value: totalRegDup.toDouble(),
+        color: regDupColor,
+        radius: 65,
+        title: "重複REG\n${pct(totalRegDup).toStringAsFixed(1)}%",
+        titleStyle: const TextStyle(
+            color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
+      ),
     ];
 
+    //---------------------------------
+    //         画面全体
+    //---------------------------------
     return Scaffold(
       appBar: AppBar(
-          title: Text(
-              '期間グラフ (${DateFormat('MM/dd').format(widget.startDate)} ～ ${DateFormat('MM/dd').format(widget.endDate)})')),
+        title: Text(
+            '期間グラフ (${DateFormat('MM/dd').format(widget.startDate)} ～ ${DateFormat('MM/dd').format(widget.endDate)})'),
+      ),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            // 🔹 差枚 / 比率ボタン
+            //---------------------
+            // 差枚/比率 切り替え
+            //---------------------
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 ElevatedButton(
-                  onPressed: () => setState(() => showDiffGraph = true),
-                  style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.green,
-                      foregroundColor: Colors.white),
-                  child: const Text("差枚グラフ"),
-                ),
+                    onPressed: () => setState(() => showDiffGraph = true),
+                    style: ElevatedButton.styleFrom(
+                        backgroundColor:
+                            showDiffGraph ? Colors.green : Colors.grey),
+                    child: const Text("差枚グラフ")),
                 const SizedBox(width: 12),
                 ElevatedButton(
-                  onPressed: () => setState(() => showDiffGraph = false),
-                  style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.green,
-                      foregroundColor: Colors.white),
-                  child: const Text("BIG/REG比率"),
-                ),
+                    onPressed: () => setState(() => showDiffGraph = false),
+                    style: ElevatedButton.styleFrom(
+                        backgroundColor:
+                            !showDiffGraph ? Colors.green : Colors.grey),
+                    child: const Text("BIG/REG比率")),
               ],
             ),
             const SizedBox(height: 16),
+
+            //-------------------------------------------------------------
+            // ① 差枚グラフ
+            //-------------------------------------------------------------
             if (showDiffGraph) ...[
-              // 🔹 日別 / 累計切替ボタン
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -155,11 +187,12 @@ class _SummaryGraphScreenState extends State<SummaryGraphScreen> {
               ),
               const SizedBox(height: 16),
               Text(
-                showCumulative ? "累計差枚の推移（枚）" : "日ごとの差枚（枚）",
-                style:
-                    const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                showCumulative ? "累計差枚の推移" : "日ごとの差枚",
+                style: const TextStyle(
+                    fontSize: 16, fontWeight: FontWeight.bold),
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 16),
+
               Expanded(
                 child: LineChart(
                   LineChartData(
@@ -170,116 +203,100 @@ class _SummaryGraphScreenState extends State<SummaryGraphScreen> {
                         spots: diffSpots,
                         isCurved: false,
                         barWidth: 3,
-                        color: showCumulative ? Colors.blueAccent : Colors.orange,
+                        color: showCumulative
+                            ? Colors.blueAccent
+                            : Colors.orange,
                         dotData: FlDotData(show: true),
-                      ),
+                      )
                     ],
                     titlesData: FlTitlesData(
+                      leftTitles: AxisTitles(
+                        sideTitles: SideTitles(
+                          showTitles: true,
+                          interval: range / 4,
+                          getTitlesWidget: (value, _) => Text(
+                            "${value.toInt()}枚",
+                            style: const TextStyle(fontSize: 10),
+                          ),
+                        ),
+                      ),
                       bottomTitles: AxisTitles(
                         sideTitles: SideTitles(
                           showTitles: true,
                           interval: 1,
-                          getTitlesWidget: (value, meta) {
-                            final index = value.toInt();
-                            if (index >= 0 && index < dateList.length) {
+                          getTitlesWidget: (value, _) {
+                            final idx = value.toInt();
+                            if (idx >= 0 && idx < dateList.length) {
                               return Text(
-                                DateFormat('MM/dd')
-                                    .format(DateFormat('yyyy/MM/dd')
-                                        .parse(dateList[index])),
+                                DateFormat("MM/dd").format(DateFormat("yyyy/MM/dd")
+                                    .parse(dateList[idx])),
                                 style: const TextStyle(fontSize: 10),
                               );
                             }
-                            return const Text('');
+                            return const SizedBox();
                           },
                         ),
                       ),
-                      leftTitles: AxisTitles(
-                        sideTitles: SideTitles(
-                            showTitles: true,
-                            interval: range / 4,
-                            getTitlesWidget: (value, meta) {
-                              return Text("${value.toInt()}枚",
-                                  style: const TextStyle(fontSize: 10));
-                            }),
-                      ),
-                      topTitles:
-                          AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                      rightTitles:
-                          AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                      topTitles: const AxisTitles(
+                          sideTitles: SideTitles(showTitles: false)),
+                      rightTitles: const AxisTitles(
+                          sideTitles: SideTitles(showTitles: false)),
                     ),
-                    gridData: FlGridData(show: true),
+                    gridData: const FlGridData(show: true),
                     borderData: FlBorderData(show: true),
                   ),
                 ),
               ),
+
+              //-------------------------------------------------------------
+              // ② 円グラフ（BIG/REG）
+              //-------------------------------------------------------------
             ] else ...[
-              // 🔹 BIG/REG円グラフ
-              Text(
+              const SizedBox(height: 10),
+              const Text(
                 "累計BIG / REG比率",
                 style:
-                    const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
-              const SizedBox(height: 16),
-              Expanded(
-                child: Column(
-                  children: [
-                    Expanded(
-                      child: PieChart(
-                        PieChartData(
-                          sections: pieSections,
-                          centerSpaceRadius: 40,
-                          sectionsSpace: 2,
-                        ),
+              const SizedBox(height: 10),
+
+              // PieChart の高さを固定して下に合計表示を可能に
+              Column(
+                children: [
+                  SizedBox(
+                    height: 200,
+                    child: PieChart(
+                      PieChartData(
+                        sections: pieSections,
+                        centerSpaceRadius: 40,
+                        sectionsSpace: 2,
                       ),
                     ),
-                    const SizedBox(height: 16),
-                    Wrap(
-                      spacing: 12,
-                      runSpacing: 4,
-                      children: [
-                        LegendItem(
-                            color: Colors.orange,
-                            label:
-                                "BIG ${((totalBig / totalCount) * 100).toStringAsFixed(1)}%"),
-                        LegendItem(
-                            color: Colors.deepOrange,
-                            label:
-                                "重複BIG ${((totalBigDup / totalCount) * 100).toStringAsFixed(1)}%"),
-                        LegendItem(
-                            color: Colors.blue,
-                            label:
-                                "REG ${((totalReg / totalCount) * 100).toStringAsFixed(1)}%"),
-                        LegendItem(
-                            color: Colors.lightBlueAccent,
-                            label:
-                                "重複REG ${((totalRegDup / totalCount) * 100).toStringAsFixed(1)}%"),
-                      ],
-                    )
-                  ],
-                ),
+                  ),
+                  const SizedBox(height: 16),
+                  // BIG合計/REG合計 表示
+                  Builder(
+                    builder: (context) {
+                      final bigTotal = totalBig + totalBigDup;
+                      final regTotal = totalReg + totalRegDup;
+                      final sumTotal = bigTotal + regTotal;
+                      double pctBig = sumTotal == 0 ? 0 : bigTotal / sumTotal * 100;
+                      double pctReg = sumTotal == 0 ? 0 : regTotal / sumTotal * 100;
+
+                      return Text(
+                        "BIG $bigTotal回 ${pctBig.toStringAsFixed(0)}% : "
+                        "REG $regTotal回 ${pctReg.toStringAsFixed(0)}%",
+                        style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 10),
+                ],
               ),
             ]
           ],
         ),
       ),
-    );
-  }
-}
-
-class LegendItem extends StatelessWidget {
-  final Color color;
-  final String label;
-  const LegendItem({required this.color, required this.label, super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Container(width: 12, height: 12, color: color),
-        const SizedBox(width: 4),
-        Text(label, style: const TextStyle(fontSize: 12)),
-      ],
     );
   }
 }
