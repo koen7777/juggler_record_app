@@ -80,20 +80,19 @@ class _SummaryGraphScreenState extends State<SummaryGraphScreen> {
       totalReg += r.reg;
       totalRegDup += r.regDup;
     }
-    final totalCount =
-        totalBig + totalBigDup + totalReg + totalRegDup;
+    final totalCount = totalBig + totalBigDup + totalReg + totalRegDup;
 
     // パーセンテージ
     double pct(int v) => totalCount == 0 ? 0 : v / totalCount * 100;
 
     // ★ 円グラフカラー
-    final bigColor = Colors.red;            // BIG → 赤
+    final bigColor = Colors.red; // BIG → 赤
     final bigDupColor = Colors.pink.shade200; // 重複BIG → 薄いピンク
-    final regColor = Colors.blue.shade400;  
+    final regColor = Colors.blue.shade400;
     final regDupColor = Colors.blue.shade700;
 
     //---------------------------------
-    //  ■ 円グラフ sections（名称修正済み）
+    // ■ 円グラフ sections
     //---------------------------------
     final pieSections = [
       PieChartSectionData(
@@ -131,7 +130,7 @@ class _SummaryGraphScreenState extends State<SummaryGraphScreen> {
     ];
 
     //---------------------------------
-    //         画面全体
+    // 画面全体
     //---------------------------------
     return Scaffold(
       appBar: AppBar(
@@ -192,7 +191,6 @@ class _SummaryGraphScreenState extends State<SummaryGraphScreen> {
                     fontSize: 16, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 16),
-
               Expanded(
                 child: LineChart(
                   LineChartData(
@@ -247,10 +245,9 @@ class _SummaryGraphScreenState extends State<SummaryGraphScreen> {
                   ),
                 ),
               ),
-
-              //-------------------------------------------------------------
-              // ② 円グラフ（BIG/REG）
-              //-------------------------------------------------------------
+            //-------------------------------------------------------------
+            // ② 円グラフ（BIG/REG）
+            //-------------------------------------------------------------
             ] else ...[
               const SizedBox(height: 10),
               const Text(
@@ -259,21 +256,20 @@ class _SummaryGraphScreenState extends State<SummaryGraphScreen> {
                     TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 10),
-
-              // PieChart の高さを固定して下に合計表示を可能に
+              // PieChart の高さをスマホ画面向けに大きく
               Column(
                 children: [
                   SizedBox(
-                    height: 200,
+                    height: MediaQuery.of(context).size.height * 0.35, // 画面比率
                     child: PieChart(
                       PieChartData(
                         sections: pieSections,
-                        centerSpaceRadius: 40,
+                        centerSpaceRadius: MediaQuery.of(context).size.height * 0.07,
                         sectionsSpace: 2,
                       ),
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 20),
                   // BIG合計/REG合計 表示
                   Builder(
                     builder: (context) {
@@ -286,11 +282,14 @@ class _SummaryGraphScreenState extends State<SummaryGraphScreen> {
                       return Text(
                         "BIG $bigTotal回 ${pctBig.toStringAsFixed(0)}% : "
                         "REG $regTotal回 ${pctReg.toStringAsFixed(0)}%",
-                        style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                        style: TextStyle(
+                          fontSize: MediaQuery.of(context).size.height * 0.025,
+                          fontWeight: FontWeight.bold,
+                        ),
                       );
                     },
                   ),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 16),
                 ],
               ),
             ]
