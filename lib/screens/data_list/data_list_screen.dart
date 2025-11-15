@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import '../../database/db_helper_web.dart';
 import '../../models/record.dart';
 import 'graph_screen.dart';
-import '../aggregation/daily_summary_screen.dart'; // ← 日別集計画面の追加
+import '../aggregation/daily_summary_screen.dart'; // ← 日別集計画面
+import '../aggregation/machine_summary_screen.dart'; // ← 機種別集計画面
 
 // 🟢 メニュー用クラス
 class MenuItem {
@@ -127,13 +128,17 @@ class _DataListScreenState extends State<DataListScreen> {
 
     // 🔹 追加分計算
     final totalBonus = record.big + record.reg + record.bigDup + record.regDup;
-    final totalBonusRate = totalBonus == 0 ? "-" : "1/${(record.totalRotation / totalBonus).toStringAsFixed(2)}";
+    final totalBonusRate = totalBonus == 0
+        ? "-"
+        : "1/${(record.totalRotation / totalBonus).toStringAsFixed(2)}";
 
     final bigTotal = record.big + record.bigDup;
-    final bigTotalRate = bigTotal == 0 ? "-" : "1/${(record.totalRotation / bigTotal).toStringAsFixed(2)}";
+    final bigTotalRate =
+        bigTotal == 0 ? "-" : "1/${(record.totalRotation / bigTotal).toStringAsFixed(2)}";
 
     final regTotal = record.reg + record.regDup;
-    final regTotalRate = regTotal == 0 ? "-" : "1/${(record.totalRotation / regTotal).toStringAsFixed(2)}";
+    final regTotalRate =
+        regTotal == 0 ? "-" : "1/${(record.totalRotation / regTotal).toStringAsFixed(2)}";
 
     return Card(
       elevation: 4,
@@ -191,7 +196,8 @@ class _DataListScreenState extends State<DataListScreen> {
             const SizedBox(height: 8),
             Text("ボーナス合計: $totalBonus回  合算確率: $totalBonusRate",
                 style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
-            Text("BIG合計: $bigTotal回  合算確率: $bigTotalRate   REG合計: $regTotal回  合算確率: $regTotalRate",
+            Text(
+                "BIG合計: $bigTotal回  合算確率: $bigTotalRate   REG合計: $regTotal回  合算確率: $regTotalRate",
                 style: const TextStyle(fontSize: 14)),
           ],
         ),
@@ -247,11 +253,11 @@ class _DataListScreenState extends State<DataListScreen> {
     );
   }
 
-  // 🟩 固定の3列メニュー（クラス化して修正版）
+  // 🟩 固定の3列メニュー（修正版）
   Widget _gridMenu(BuildContext context) {
     final menuItems = [
       MenuItem("日別", Icons.calendar_today, const DailySummaryScreen()),
-      MenuItem("機種別", Icons.games, null),
+      MenuItem("機種別", Icons.games, MachineSummaryScreen()), // ← const 外す
       MenuItem("店舗別", Icons.store, null),
       MenuItem("通算", Icons.assessment, null),
       MenuItem("末尾別", Icons.tag, null),
