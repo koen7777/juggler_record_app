@@ -80,19 +80,20 @@ class _SummaryGraphScreenState extends State<SummaryGraphScreen> {
       totalReg += r.reg;
       totalRegDup += r.regDup;
     }
-    final totalCount = totalBig + totalBigDup + totalReg + totalRegDup;
+    final totalCount =
+        totalBig + totalBigDup + totalReg + totalRegDup;
 
     // パーセンテージ
     double pct(int v) => totalCount == 0 ? 0 : v / totalCount * 100;
 
     // ★ 円グラフカラー
-    final bigColor = Colors.red; // BIG → 赤
+    final bigColor = Colors.red;            // BIG → 赤
     final bigDupColor = Colors.pink.shade200; // 重複BIG → 薄いピンク
-    final regColor = Colors.blue.shade400;
+    final regColor = Colors.blue.shade400;  
     final regDupColor = Colors.blue.shade700;
 
     //---------------------------------
-    // ■ 円グラフ sections
+    //  ■ 円グラフ sections（名称修正済み）
     //---------------------------------
     final pieSections = [
       PieChartSectionData(
@@ -130,7 +131,7 @@ class _SummaryGraphScreenState extends State<SummaryGraphScreen> {
     ];
 
     //---------------------------------
-    // 画面全体
+    //         画面全体
     //---------------------------------
     return Scaffold(
       appBar: AppBar(
@@ -142,26 +143,49 @@ class _SummaryGraphScreenState extends State<SummaryGraphScreen> {
         child: Column(
           children: [
             //---------------------
-            // 差枚/比率 切り替え
+            // 差枚/比率 切り替えボタン（緑＋白文字）
             //---------------------
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 ElevatedButton(
-                    onPressed: () => setState(() => showDiffGraph = true),
-                    style: ElevatedButton.styleFrom(
-                        backgroundColor:
-                            showDiffGraph ? Colors.green : Colors.grey),
-                    child: const Text("差枚グラフ")),
+                  onPressed: () => setState(() => showDiffGraph = true),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor:
+                        showDiffGraph ? Colors.green : Colors.grey,
+                    foregroundColor: Colors.white, // 白文字
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 10),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: const Text(
+                    "差枚グラフ",
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                ),
                 const SizedBox(width: 12),
                 ElevatedButton(
-                    onPressed: () => setState(() => showDiffGraph = false),
-                    style: ElevatedButton.styleFrom(
-                        backgroundColor:
-                            !showDiffGraph ? Colors.green : Colors.grey),
-                    child: const Text("BIG/REG比率")),
+                  onPressed: () => setState(() => showDiffGraph = false),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor:
+                        !showDiffGraph ? Colors.green : Colors.grey,
+                    foregroundColor: Colors.white, // 白文字
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 10),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: const Text(
+                    "BIG/REG比率",
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                ),
               ],
             ),
+
             const SizedBox(height: 16),
 
             //-------------------------------------------------------------
@@ -191,6 +215,7 @@ class _SummaryGraphScreenState extends State<SummaryGraphScreen> {
                     fontSize: 16, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 16),
+
               Expanded(
                 child: LineChart(
                   LineChartData(
@@ -245,9 +270,10 @@ class _SummaryGraphScreenState extends State<SummaryGraphScreen> {
                   ),
                 ),
               ),
-            //-------------------------------------------------------------
-            // ② 円グラフ（BIG/REG）
-            //-------------------------------------------------------------
+
+              //-------------------------------------------------------------
+              // ② 円グラフ（BIG/REG）
+              //-------------------------------------------------------------
             ] else ...[
               const SizedBox(height: 10),
               const Text(
@@ -256,40 +282,39 @@ class _SummaryGraphScreenState extends State<SummaryGraphScreen> {
                     TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 10),
-              // PieChart の高さをスマホ画面向けに大きく
+
               Column(
                 children: [
                   SizedBox(
-                    height: MediaQuery.of(context).size.height * 0.35, // 画面比率
+                    height: 250,
                     child: PieChart(
                       PieChartData(
                         sections: pieSections,
-                        centerSpaceRadius: MediaQuery.of(context).size.height * 0.07,
+                        centerSpaceRadius: 50,
                         sectionsSpace: 2,
                       ),
                     ),
                   ),
-                  const SizedBox(height: 20),
-                  // BIG合計/REG合計 表示
+                  const SizedBox(height: 16),
                   Builder(
                     builder: (context) {
                       final bigTotal = totalBig + totalBigDup;
                       final regTotal = totalReg + totalRegDup;
                       final sumTotal = bigTotal + regTotal;
-                      double pctBig = sumTotal == 0 ? 0 : bigTotal / sumTotal * 100;
-                      double pctReg = sumTotal == 0 ? 0 : regTotal / sumTotal * 100;
+                      double pctBig =
+                          sumTotal == 0 ? 0 : bigTotal / sumTotal * 100;
+                      double pctReg =
+                          sumTotal == 0 ? 0 : regTotal / sumTotal * 100;
 
                       return Text(
                         "BIG $bigTotal回 ${pctBig.toStringAsFixed(0)}% : "
                         "REG $regTotal回 ${pctReg.toStringAsFixed(0)}%",
-                        style: TextStyle(
-                          fontSize: MediaQuery.of(context).size.height * 0.025,
-                          fontWeight: FontWeight.bold,
-                        ),
+                        style: const TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.bold),
                       );
                     },
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 10),
                 ],
               ),
             ]
