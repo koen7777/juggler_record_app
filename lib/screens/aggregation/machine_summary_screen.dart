@@ -14,6 +14,19 @@ class _MachineSummaryScreenState extends State<MachineSummaryScreen> {
   final DBHelperWeb _db = DBHelperWeb();
   Map<String, List<Record>> grouped = {};
 
+  // 固定順
+  final List<String> fixedOrder = [
+    'アイムジャグラー',
+    'ファンキージャグラー',
+    'マイジャグラー',
+    'GOGOジャグラー',
+    'ジャグラーガールズ',
+    'ハッピージャグラー',
+    'ミスタージャグラー',
+    'ウルトラミラクルジャグラー',
+    'その他',
+  ];
+
   @override
   void initState() {
     super.initState();
@@ -28,8 +41,21 @@ class _MachineSummaryScreenState extends State<MachineSummaryScreen> {
       map.putIfAbsent(r.machine, () => []).add(r);
     }
 
+    // 固定順に並び替え
+    final orderedMap = {
+      for (var key in fixedOrder)
+        if (map.containsKey(key)) key: map[key]!,
+    };
+
+    // その他に入れる機種を "その他" にまとめる
+    final others = map.keys.where((k) => !fixedOrder.contains(k));
+    if (others.isNotEmpty) {
+      final otherRecords = others.expand((k) => map[k]!).toList();
+      orderedMap['その他'] = otherRecords;
+    }
+
     setState(() {
-      grouped = map;
+      grouped = orderedMap;
     });
   }
 
@@ -41,9 +67,8 @@ class _MachineSummaryScreenState extends State<MachineSummaryScreen> {
           ? const Center(child: CircularProgressIndicator())
           : ListView(
               padding: const EdgeInsets.all(16),
-              children: grouped.entries
-                  .map((e) => _machineCard(e.key, e.value))
-                  .toList(),
+              children:
+                  grouped.entries.map((e) => _machineCard(e.key, e.value)).toList(),
             ),
     );
   }
@@ -63,8 +88,10 @@ class _MachineSummaryScreenState extends State<MachineSummaryScreen> {
     final bigTotal = totalBig + totalBigDup;
     final regTotal = totalReg + totalRegDup;
 
-    final payout = totalGames == 0 ? 0 : ((totalDiff / (totalGames * 3)) * 100 + 100);
-    String rate(int count) => count == 0 ? "-" : "1/${(totalGames / count).toStringAsFixed(0)}";
+    final payout =
+        totalGames == 0 ? 0 : ((totalDiff / (totalGames * 3)) * 100 + 100);
+    String rate(int count) =>
+        count == 0 ? "-" : "1/${(totalGames / count).toStringAsFixed(0)}";
 
     return Card(
       elevation: 4,
@@ -87,9 +114,12 @@ class _MachineSummaryScreenState extends State<MachineSummaryScreen> {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    // 差枚表示
                     Row(
                       children: [
-                        const Text("差枚：", style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold)),
+                        const Text("差枚：",
+                            style: TextStyle(
+                                fontSize: 26, fontWeight: FontWeight.bold)),
                         Text(
                           "${totalDiff >= 0 ? '+' : ''}$totalDiff枚",
                           style: TextStyle(
@@ -106,29 +136,31 @@ class _MachineSummaryScreenState extends State<MachineSummaryScreen> {
                       "ペイアウト：${payout.toStringAsFixed(1)}%",
                       style: TextStyle(color: payout < 100 ? Colors.red : Colors.black),
                     ),
-
                     const SizedBox(height: 16),
                     const Divider(),
                     const SizedBox(height: 8),
 
-                    Text("BIG $totalBig回 (${rate(totalBig)})   REG $totalReg回 (${rate(totalReg)})"),
+                    // ボーナス・小役
+                    Text(
+                        "BIG $totalBig回 (${rate(totalBig)})   REG $totalReg回 (${rate(totalReg)})"),
                     const SizedBox(height: 4),
-                    Text("重複BIG $totalBigDup回 (${rate(totalBigDup)})   重複REG $totalRegDup回 (${rate(totalRegDup)})"),
+                    Text(
+                        "重複BIG $totalBigDup回 (${rate(totalBigDup)})   重複REG $totalRegDup回 (${rate(totalRegDup)})"),
                     const SizedBox(height: 4),
-                    Text("チェリー $totalCherry回 (${rate(totalCherry)})   ぶどう $totalGrape回 (${rate(totalGrape)})"),
-
+                    Text(
+                        "チェリー $totalCherry回 (${rate(totalCherry)})   ぶどう $totalGrape回 (${rate(totalGrape)})"),
                     const SizedBox(height: 8),
                     const Divider(),
                     const SizedBox(height: 8),
-
                     Text("ボーナス合計: $totalBonus回  合算: ${rate(totalBonus)}"),
-                    Text("BIG合計: $bigTotal回 (${rate(bigTotal)})   REG合計: $regTotal回 (${rate(regTotal)})"),
+                    Text(
+                        "BIG合計: $bigTotal回 (${rate(bigTotal)})   REG合計: $regTotal回 (${rate(regTotal)})"),
                     const SizedBox(height: 4),
                     Text("プレイ回数：${records.length}回", style: const TextStyle(fontSize: 12)),
                   ],
                 ),
 
-                // 右下グラフボタン（★ records だけ渡す）
+                // 🔹 差枚グラフボタン（オレンジ・アイコン＋白文字）
                 Positioned(
                   bottom: 0,
                   right: 0,
@@ -138,26 +170,35 @@ class _MachineSummaryScreenState extends State<MachineSummaryScreen> {
                         context,
                         MaterialPageRoute(
                           builder: (_) => MachineGraphScreen(
-                            records: records, // ← これだけ
+                            records: records,
                           ),
                         ),
                       );
                     },
                     child: Container(
-                      width: 55,
-                      height: 55,
+                      width: 60,
+                      height: 60,
                       decoration: BoxDecoration(
-                        color: Colors.green,
+                        color: Colors.orange,
                         shape: BoxShape.circle,
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.green.withOpacity(0.4),
-                            blurRadius: 4,
-                            offset: const Offset(0, 2),
+                              color: Colors.orange.withOpacity(0.4),
+                              blurRadius: 4,
+                              offset: const Offset(0, 2)),
+                        ],
+                      ),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: const [
+                          Icon(Icons.show_chart, color: Colors.white),
+                          SizedBox(height: 2),
+                          Text(
+                            "グラフ",
+                            style: TextStyle(color: Colors.white, fontSize: 10),
                           ),
                         ],
                       ),
-                      child: const Icon(Icons.show_chart, color: Colors.white),
                     ),
                   ),
                 ),

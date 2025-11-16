@@ -138,8 +138,12 @@ class _MachineGraphScreenState extends State<MachineGraphScreen> {
                               getTitlesWidget: (value, meta) {
                                 int idx = value.toInt();
                                 if (idx < 0 || idx >= sortedRecords.length) return const SizedBox();
+                                // 🔹 日付を "DD" のみ表示
+                                final ddOnly = sortedRecords[idx].date.length >= 10
+                                    ? sortedRecords[idx].date.substring(8, 10)
+                                    : sortedRecords[idx].date;
                                 return Text(
-                                  sortedRecords[idx].date,
+                                  ddOnly,
                                   style: const TextStyle(fontSize: 10),
                                 );
                               },
@@ -181,31 +185,24 @@ class _MachineGraphScreenState extends State<MachineGraphScreen> {
                         ),
                         const SizedBox(height: 12),
 
-                        // ★ ここを 1列横並びに修正した
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 6.0),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(
-                                "BIG合計：$bigSum回（${pct(bigSum).toStringAsFixed(1)}％）",
-                                style: const TextStyle(
-                                  fontSize: 18,
-                                  color: Colors.black,
-                                  fontWeight: FontWeight.bold,
-                                ),
+                        // ★ BIG/REG合計（1行表示・黒文字・大きめ）
+                        Builder(
+                          builder: (context) {
+                            final bigTotal = totalBig + totalBigDup;
+                            final regTotal = totalReg + totalRegDup;
+                            final sumTotal = bigTotal + regTotal;
+                            double pctBig = sumTotal == 0 ? 0 : bigTotal / sumTotal * 100;
+                            double pctReg = sumTotal == 0 ? 0 : regTotal / sumTotal * 100;
+
+                            return Text(
+                              "BIG $bigTotal回 ${pctBig.toStringAsFixed(0)}% : REG $regTotal回 ${pctReg.toStringAsFixed(0)}%",
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black,
                               ),
-                              const SizedBox(width: 16),
-                              Text(
-                                "REG合計：$regSum回（${pct(regSum).toStringAsFixed(1)}％）",
-                                style: const TextStyle(
-                                  fontSize: 18,
-                                  color: Colors.black,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ],
-                          ),
+                            );
+                          },
                         ),
                       ],
                     ),
