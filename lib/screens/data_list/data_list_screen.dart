@@ -6,6 +6,7 @@ import '../aggregation/daily_summary_screen.dart'; // ← 日別集計画面
 import '../aggregation/machine_summary_screen.dart'; // ← 機種別集計画面
 import '../aggregation/store_summary_screen.dart'; // パスと小文字を確認
 import '../aggregation/total_summary_screen.dart';
+import '../aggregation/tail_summary_screen.dart'; // 
 
 // 🟢 メニュー用クラス
 class MenuItem {
@@ -262,7 +263,7 @@ class _DataListScreenState extends State<DataListScreen> {
       MenuItem("機種別", Icons.games, MachineSummaryScreen()), // ← const 外す
       MenuItem("店舗別", Icons.store, const ShopSummaryScreen()),
       MenuItem("通算", Icons.assessment, const TotalSummaryScreen()),
-      MenuItem("末尾別", Icons.tag, null),
+      MenuItem("末尾別", Icons.tag, const TailSummaryScreen()),
       MenuItem("特定日", Icons.star, null),
     ];
 
