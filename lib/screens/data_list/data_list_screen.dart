@@ -7,6 +7,7 @@ import '../aggregation/machine_summary_screen.dart'; // ← 機種別集計画�
 import '../aggregation/store_summary_screen.dart'; // パスと小文字を確認
 import '../aggregation/total_summary_screen.dart';
 import '../aggregation/tail_summary_screen.dart'; // 
+import '../aggregation/specific_day_summary_screen.dart';
 
 // 🟢 メニュー用クラス
 class MenuItem {
@@ -264,7 +265,8 @@ class _DataListScreenState extends State<DataListScreen> {
       MenuItem("店舗別", Icons.store, const ShopSummaryScreen()),
       MenuItem("通算", Icons.assessment, const TotalSummaryScreen()),
       MenuItem("末尾別", Icons.tag, const TailSummaryScreen()),
-      MenuItem("特定日", Icons.star, null),
+      MenuItem("特定日", Icons.star, SpecificDaySummaryScreen()),
+
     ];
 
     return GridView.count(
