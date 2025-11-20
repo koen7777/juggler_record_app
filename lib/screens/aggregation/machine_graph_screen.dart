@@ -32,6 +32,10 @@ class _MachineGraphScreenState extends State<MachineGraphScreen> {
       spots.add(FlSpot(i.toDouble(), cumulative.toDouble()));
     }
 
+    // Y軸の余白 ±300枚
+    double minY = spots.isEmpty ? 0 : spots.map((e) => e.y).reduce((a, b) => a < b ? a : b) - 300;
+    double maxY = spots.isEmpty ? 0 : spots.map((e) => e.y).reduce((a, b) => a > b ? a : b) + 300;
+
     // ------------------------
     // ② BIG/REG比率
     // ------------------------
@@ -42,7 +46,6 @@ class _MachineGraphScreenState extends State<MachineGraphScreen> {
 
     final bigSum = totalBig + totalBigDup;
     final regSum = totalReg + totalRegDup;
-
     final sumTotal = (bigSum + regSum).toDouble();
     double pct(int count) => sumTotal == 0 ? 0 : count.toDouble() / sumTotal * 100;
 
@@ -127,10 +130,12 @@ class _MachineGraphScreenState extends State<MachineGraphScreen> {
             child: Center(
               child: selectedGraph == GraphType.cumulative
                   // -------------------------
-                  // ★ 累計差枚ラインチャート
+                  // ★ 累計差枚ラインチャート（直線＋±300枚余白）
                   // -------------------------
                   ? LineChart(
                       LineChartData(
+                        minY: minY.toDouble(),
+                        maxY: maxY.toDouble(),
                         titlesData: FlTitlesData(
                           bottomTitles: AxisTitles(
                             sideTitles: SideTitles(
@@ -159,7 +164,7 @@ class _MachineGraphScreenState extends State<MachineGraphScreen> {
                         lineBarsData: [
                           LineChartBarData(
                             spots: spots,
-                            isCurved: true,
+                            isCurved: false, // ←直線
                             barWidth: 2,
                             color: Colors.orange,
                             dotData: FlDotData(show: true),
@@ -184,8 +189,6 @@ class _MachineGraphScreenState extends State<MachineGraphScreen> {
                           ),
                         ),
                         const SizedBox(height: 12),
-
-                        // ★ BIG/REG合計（1行表示・黒文字・大きめ）
                         Builder(
                           builder: (context) {
                             final bigTotal = totalBig + totalBigDup;

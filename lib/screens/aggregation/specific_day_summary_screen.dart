@@ -38,7 +38,9 @@ class _SpecificDaySummaryScreenState extends State<SpecificDaySummaryScreen> {
 
   // フィルター状態
   FilterType filterType = FilterType.DigitDay;
-  int filterDigit = 1; // ◯の日ダイアログ用
+  int filterDigit = 1; // ◯の日用
+  int selectedDoubleDigit = 11; // ゾロ目の日用（11 or 22）
+  int selectedMonthZoro = 1; // 月ゾロ用
   String? selectedShop; // 店舗選択
 
   @override
@@ -64,17 +66,16 @@ class _SpecificDaySummaryScreenState extends State<SpecificDaySummaryScreen> {
           if (r.date.length < 1) return false;
           return r.date.endsWith(filterDigit.toString());
         case FilterType.DoubleDigit:
-          // 同じ数字が2桁以上続く日（11,22…）
           if (r.date.length < 2) return false;
-          return r.date.length >= 2 &&
-              r.date[r.date.length - 2] == r.date[r.date.length - 1];
+          final day = int.tryParse(r.date.substring(r.date.length - 2)) ?? 0;
+          return day == selectedDoubleDigit;
         case FilterType.MonthDouble:
-          // 月ゾロ 01/01, 02/02, 11/11など
-          if (r.date.length < 5) return false;
-          // yyyy/mm/dd 想定
           final parts = r.date.split('/');
           if (parts.length < 3) return false;
-          return parts[1] == parts[2]; // 月==日
+          final month = int.tryParse(parts[1]);
+          final day = int.tryParse(parts[2]);
+          if (month == null || day == null) return false;
+          return month == day && month == selectedMonthZoro;
       }
     }).toList();
 
@@ -112,6 +113,34 @@ class _SpecificDaySummaryScreenState extends State<SpecificDaySummaryScreen> {
     }
   }
 
+  void _changeDoubleDigit() async {
+    final result = await showDialog<int>(
+      context: context,
+      builder: (_) => _DoubleDigitSelectDialog(initial: selectedDoubleDigit),
+    );
+    if (result != null) {
+      selectedDoubleDigit = result;
+      setState(() {
+        filterType = FilterType.DoubleDigit;
+        _applyFilter();
+      });
+    }
+  }
+
+  void _changeMonthZoro() async {
+    final result = await showDialog<int>(
+      context: context,
+      builder: (_) => _MonthZoroSelectDialog(initial: selectedMonthZoro),
+    );
+    if (result != null) {
+      selectedMonthZoro = result;
+      setState(() {
+        filterType = FilterType.MonthDouble;
+        _applyFilter();
+      });
+    }
+  }
+
   void _changeShop() async {
     final shops = allRecords.map((r) => r.shop).toSet().toList();
     final result = await showDialog<String>(
@@ -137,21 +166,11 @@ class _SpecificDaySummaryScreenState extends State<SpecificDaySummaryScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 6),
             child: Row(
               children: [
-                _filterButton("◯の日", () => _changeDigit()),
+                _filterButton("◯の日", _changeDigit),
                 const SizedBox(width: 6),
-                _filterButton("ゾロ目の日", () {
-                  setState(() {
-                    filterType = FilterType.DoubleDigit;
-                    _applyFilter();
-                  });
-                }),
+                _filterButton("ゾロ目の日", _changeDoubleDigit),
                 const SizedBox(width: 6),
-                _filterButton("月ゾロの日", () {
-                  setState(() {
-                    filterType = FilterType.MonthDouble;
-                    _applyFilter();
-                  });
-                }),
+                _filterButton("月ゾロの日", _changeMonthZoro),
                 const SizedBox(width: 6),
                 GestureDetector(
                   onTap: _changeShop,
@@ -192,10 +211,10 @@ class _SpecificDaySummaryScreenState extends State<SpecificDaySummaryScreen> {
         title = "${filterDigit}のつく日";
         break;
       case FilterType.DoubleDigit:
-        title = "ゾロ目の日";
+        title = "ゾロ目の日: ${selectedDoubleDigit}日";
         break;
       case FilterType.MonthDouble:
-        title = "月ゾロの日";
+        title = "月ゾロの日: ${selectedMonthZoro}月${selectedMonthZoro}日";
         break;
     }
     if (selectedShop != null && selectedShop!.isNotEmpty) {
@@ -256,8 +275,7 @@ class _SpecificDaySummaryScreenState extends State<SpecificDaySummaryScreen> {
                   Text("総回転数：$totalGames G"),
                   Text(
                     "ペイアウト：${payout.toStringAsFixed(1)}%",
-                    style:
-                        TextStyle(color: payout < 100 ? Colors.red : Colors.black),
+                    style: TextStyle(color: payout < 100 ? Colors.red : Colors.black),
                   ),
                   const SizedBox(height: 14),
                   const Divider(),
@@ -346,6 +364,7 @@ class _SpecificDaySummaryScreenState extends State<SpecificDaySummaryScreen> {
   }
 }
 
+// ◯の日選択ダイアログ
 class _DigitSelectDialog extends StatefulWidget {
   final int initial;
   const _DigitSelectDialog({required this.initial});
@@ -376,17 +395,87 @@ class _DigitSelectDialogState extends State<_DigitSelectDialog> {
         onChanged: (v) => setState(() => _digit = v!),
       ),
       actions: [
-        TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text("キャンセル")),
-        ElevatedButton(
-            onPressed: () => Navigator.pop(context, _digit),
-            child: const Text("決定")),
+        TextButton(onPressed: () => Navigator.pop(context), child: const Text("キャンセル")),
+        ElevatedButton(onPressed: () => Navigator.pop(context, _digit), child: const Text("決定")),
       ],
     );
   }
 }
 
+// ゾロ目の日選択ダイアログ
+class _DoubleDigitSelectDialog extends StatefulWidget {
+  final int initial;
+  const _DoubleDigitSelectDialog({required this.initial});
+
+  @override
+  State<_DoubleDigitSelectDialog> createState() => _DoubleDigitSelectDialogState();
+}
+
+class _DoubleDigitSelectDialogState extends State<_DoubleDigitSelectDialog> {
+  late int _digit;
+
+  @override
+  void initState() {
+    super.initState();
+    _digit = widget.initial;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text("ゾロ目の日を選択"),
+      content: DropdownButton<int>(
+        value: _digit,
+        items: [11, 22].map((d) => DropdownMenuItem(value: d, child: Text("$d日"))).toList(),
+        onChanged: (v) => setState(() => _digit = v!),
+      ),
+      actions: [
+        TextButton(onPressed: () => Navigator.pop(context), child: const Text("キャンセル")),
+        ElevatedButton(onPressed: () => Navigator.pop(context, _digit), child: const Text("決定")),
+      ],
+    );
+  }
+}
+
+// 月ゾロ選択ダイアログ
+class _MonthZoroSelectDialog extends StatefulWidget {
+  final int initial;
+  const _MonthZoroSelectDialog({required this.initial});
+
+  @override
+  State<_MonthZoroSelectDialog> createState() => _MonthZoroSelectDialogState();
+}
+
+class _MonthZoroSelectDialogState extends State<_MonthZoroSelectDialog> {
+  late int _month;
+
+  @override
+  void initState() {
+    super.initState();
+    _month = widget.initial;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text("月ゾロの日を選択"),
+      content: DropdownButton<int>(
+        value: _month,
+        items: List.generate(
+          12,
+          (i) => DropdownMenuItem(value: i + 1, child: Text("${i + 1}月${i + 1}日")),
+        ),
+        onChanged: (v) => setState(() => _month = v!),
+      ),
+      actions: [
+        TextButton(onPressed: () => Navigator.pop(context), child: const Text("キャンセル")),
+        ElevatedButton(onPressed: () => Navigator.pop(context, _month), child: const Text("決定")),
+      ],
+    );
+  }
+}
+
+// 店舗選択ダイアログ
 class _ShopSelectDialog extends StatefulWidget {
   final List<String> shops;
   final String? initial;
@@ -417,12 +506,8 @@ class _ShopSelectDialogState extends State<_ShopSelectDialog> {
         onChanged: (v) => setState(() => _selected = v),
       ),
       actions: [
-        TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text("キャンセル")),
-        ElevatedButton(
-            onPressed: () => Navigator.pop(context, _selected),
-            child: const Text("決定")),
+        TextButton(onPressed: () => Navigator.pop(context), child: const Text("キャンセル")),
+        ElevatedButton(onPressed: () => Navigator.pop(context, _selected), child: const Text("決定")),
       ],
     );
   }
