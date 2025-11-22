@@ -15,7 +15,8 @@ dependencies:
     sdk: flutter
   intl: ^0.20.2
   table_calendar: ^3.0.9
-  fl_chart: ^0.68.0     # ← ← ← ★これを追加！
+  fl_chart: ^0.68.0
+  flutter_date_pickers: ^0.4.3   # RangePicker用パッケージ
 
 dev_dependencies:
   flutter_test:
