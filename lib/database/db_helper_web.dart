@@ -45,7 +45,6 @@ class DBHelperWeb {
 
   Future<void> insertRecord(Record record) async {
     final records = await getRecords();
-    // 重複チェック
     if (!_exists(records, record)) {
       records.add(record);
       _sortRecordsByDate(records);
@@ -69,7 +68,6 @@ class DBHelperWeb {
         jsonEncode(sorted.map((r) => r.toMap()).toList());
   }
 
-  // 重複チェック
   bool _exists(List<Record> records, Record record) {
     return records.any((r) =>
         r.date == record.date &&
@@ -134,15 +132,13 @@ class DBHelperWeb {
   }
 
   // ----------------------
-  // CSV読み込み（改行/BOM/trim対応）
+  // CSV読み込み（ロジック部分）
   // ----------------------
   Future<void> importCsv(String csvText) async {
-    // ▼ UTF-8 BOM 除去
     if (csvText.startsWith('\uFEFF')) {
       csvText = csvText.substring(1);
     }
 
-    // ▼ 改行コードを統一
     csvText = csvText.replaceAll('\r\n', '\n').replaceAll('\r', '\n');
 
     final lines = csvText
@@ -155,7 +151,6 @@ class DBHelperWeb {
 
     final records = <Record>[];
 
-    // ▼ 1行目 = ヘッダー
     for (var i = 1; i < lines.length; i++) {
       final cols = lines[i].split(',');
 
@@ -183,7 +178,32 @@ class DBHelperWeb {
   }
 
   // ----------------------
-  // CSVエクスポート（UTF-8 BOM付き）
+  // CSVファイル選択＋読み込み（UI → ロジック）
+  // ----------------------
+  Future<void> importCsvFromFile() async {
+    final upload = html.FileUploadInputElement();
+    upload.accept = ".csv,text/csv,application/csv"; // ← 全端末対応
+
+    upload.click();
+
+    upload.onChange.listen((event) {
+      final file = upload.files?.first;
+      if (file == null) return;
+
+      final reader = html.FileReader();
+
+      // UTF-8 で読む（超必須）
+      reader.readAsText(file, "UTF-8");
+
+      reader.onLoadEnd.listen((event) async {
+        final csvText = reader.result as String;
+        await importCsv(csvText);
+      });
+    });
+  }
+
+  // ----------------------
+  // CSVエクスポート
   // ----------------------
   void exportRecordsToCsv(List<Record> records) {
     if (records.isEmpty) return;
@@ -222,7 +242,6 @@ class DBHelperWeb {
     buffer.writeln(header.join(','));
     buffer.writeAll(csvRows.map((row) => row.join(',')), '\n');
 
-    // ▼ UTF-8 BOM を付けて Excel でもスマホでも文字化けなし
     final csv = '\uFEFF' + buffer.toString();
     final bytes = utf8.encode(csv);
     final blob = html.Blob([bytes], 'text/csv');
