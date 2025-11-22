@@ -6,7 +6,9 @@ class DBHelperWeb {
   static const String _recordsKey = 'records';
   static const String _shopsKey = 'shops';
 
-  // ✅ 日付を安全にパースする
+  // ----------------------
+  // 日付パース（安全仕様）
+  // ----------------------
   DateTime _parseDate(String s) {
     final normalized = s.trim().replaceAll('/', '-');
     try {
@@ -16,7 +18,9 @@ class DBHelperWeb {
     }
   }
 
-  // ✅ 日付の降順（新しい順）でソート
+  // ----------------------
+  // 日付で降順ソート
+  // ----------------------
   List<Record> _sortRecordsByDate(List<Record> list) {
     list.sort((a, b) => _parseDate(b.date).compareTo(_parseDate(a.date)));
     return list;
@@ -65,7 +69,7 @@ class DBHelperWeb {
         jsonEncode(sorted.map((r) => r.toMap()).toList());
   }
 
-  // ✅ 重複チェック用関数
+  // 重複チェック
   bool _exists(List<Record> records, Record record) {
     return records.any((r) =>
         r.date == record.date &&
@@ -130,34 +134,48 @@ class DBHelperWeb {
   }
 
   // ----------------------
-  // CSV読み込み用ヘルパー
+  // CSV読み込み（改行/BOM/trim対応）
   // ----------------------
   Future<void> importCsv(String csvText) async {
+    // ▼ UTF-8 BOM 除去
+    if (csvText.startsWith('\uFEFF')) {
+      csvText = csvText.substring(1);
+    }
+
+    // ▼ 改行コードを統一
+    csvText = csvText.replaceAll('\r\n', '\n').replaceAll('\r', '\n');
+
     final lines = csvText
         .split('\n')
         .map((l) => l.trim())
         .where((l) => l.isNotEmpty)
         .toList();
+
     if (lines.isEmpty) return;
-    // ヘッダー除外
+
     final records = <Record>[];
+
+    // ▼ 1行目 = ヘッダー
     for (var i = 1; i < lines.length; i++) {
       final cols = lines[i].split(',');
+
       if (cols.length < 12) continue;
+
       final record = Record(
-        date: cols[0],
-        machine: cols[1],
-        shop: cols[2],
-        number: cols[3],
-        totalRotation: int.tryParse(cols[4]) ?? 0,
-        diff: int.tryParse(cols[5]) ?? 0,
-        big: int.tryParse(cols[6]) ?? 0,
-        reg: int.tryParse(cols[7]) ?? 0,
-        bigDup: int.tryParse(cols[8]) ?? 0,
-        regDup: int.tryParse(cols[9]) ?? 0,
-        cherry: int.tryParse(cols[10]) ?? 0,
-        grape: int.tryParse(cols[11]) ?? 0,
+        date: cols[0].trim(),
+        machine: cols[1].trim(),
+        shop: cols[2].trim(),
+        number: cols[3].trim(),
+        totalRotation: int.tryParse(cols[4].trim()) ?? 0,
+        diff: int.tryParse(cols[5].trim()) ?? 0,
+        big: int.tryParse(cols[6].trim()) ?? 0,
+        reg: int.tryParse(cols[7].trim()) ?? 0,
+        bigDup: int.tryParse(cols[8].trim()) ?? 0,
+        regDup: int.tryParse(cols[9].trim()) ?? 0,
+        cherry: int.tryParse(cols[10].trim()) ?? 0,
+        grape: int.tryParse(cols[11].trim()) ?? 0,
       );
+
       records.add(record);
     }
 
@@ -165,12 +183,12 @@ class DBHelperWeb {
   }
 
   // ----------------------
-  // CSVエクスポート（日時付きファイル名）
+  // CSVエクスポート（UTF-8 BOM付き）
   // ----------------------
   void exportRecordsToCsv(List<Record> records) {
     if (records.isEmpty) return;
 
-    final csvHeader = [
+    final header = [
       '日付',
       '機種名',
       '店舗名',
@@ -200,12 +218,14 @@ class DBHelperWeb {
           r.grape
         ]);
 
-    final csvContent = StringBuffer();
-    csvContent.writeln(csvHeader.join(','));
-    csvContent.writeAll(csvRows.map((row) => row.join(',')), '\n');
+    final buffer = StringBuffer();
+    buffer.writeln(header.join(','));
+    buffer.writeAll(csvRows.map((row) => row.join(',')), '\n');
 
-    final bytes = utf8.encode(csvContent.toString());
-    final blob = html.Blob([bytes]);
+    // ▼ UTF-8 BOM を付けて Excel でもスマホでも文字化けなし
+    final csv = '\uFEFF' + buffer.toString();
+    final bytes = utf8.encode(csv);
+    final blob = html.Blob([bytes], 'text/csv');
 
     final now = DateTime.now();
     final filename =
