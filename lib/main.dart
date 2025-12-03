@@ -14,7 +14,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'こえん式ジャグラー収支表 Web版',
+      title: 'ジャグノート',
       theme: ThemeData(primarySwatch: Colors.green),
 
       // 最初に表示する画面
