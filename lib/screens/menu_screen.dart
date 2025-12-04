@@ -7,7 +7,8 @@ import 'view_records_screen.dart';
 import 'shops_screen.dart';
 import '../database/db_helper_web.dart';
 import '../models/record.dart';
-import 'data_list/data_list_screen.dart'; // ← 追加
+import 'data_list/data_list_screen.dart';
+import 'about_screen.dart'; // ← AboutScreen を追加
 
 class MenuScreen extends StatefulWidget {
   const MenuScreen({super.key});
@@ -98,16 +99,32 @@ class _MenuScreenState extends State<MenuScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            // トップに説明文追加
+            const Text(
+              'このアプリは、自分がプレイしたパチスロのデータを記録・管理し、'
+              '統計やグラフで分析できるツールです。勝ち方の指南はありません。',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.black87,
+              ),
+            ),
+            const SizedBox(height: 16),
+
+            // メニュー
             _menuButton(context, 'データ入力', const AddRecordScreen()),
             const SizedBox(height: 12),
             _menuButton(context, 'データ閲覧', const ViewRecordsScreen()),
             const SizedBox(height: 12),
             _menuButton(context, '店舗登録', const ShopsScreen()),
             const SizedBox(height: 12),
-            _menuButton(context, 'データ一覧', const DataListScreen()), // ← ここを変更
+            _menuButton(context, 'データ一覧', const DataListScreen()),
             const SizedBox(height: 24),
+
             const Divider(),
             const SizedBox(height: 12),
+
+            // CSV操作ボタン
             _coloredButton(
               context,
               'CSVをエクスポート（保存）',
@@ -124,6 +141,8 @@ class _MenuScreenState extends State<MenuScreen> {
               textColor: Colors.black,
             ),
             const SizedBox(height: 12),
+
+            // 注意文
             Container(
               padding: const EdgeInsets.all(12),
               color: Colors.red[50],
@@ -138,10 +157,15 @@ class _MenuScreenState extends State<MenuScreen> {
               ),
             ),
             const SizedBox(height: 12),
+
+            // 「このアプリについて」ボタン
             _coloredButton(
               context,
-              '権利について',
-              () {},
+              'このアプリについて',
+              () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const AboutScreen()),
+              ),
               backgroundColor: Colors.blue,
               textColor: Colors.white,
             ),
