@@ -1,6 +1,7 @@
 // lib/screens/menu_screen.dart
 import 'dart:convert';
 import 'dart:html' as html;
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'add_record_screen.dart';
 import 'view_records_screen.dart';
@@ -8,7 +9,7 @@ import 'shops_screen.dart';
 import '../database/db_helper_web.dart';
 import '../models/record.dart';
 import 'data_list/data_list_screen.dart';
-import 'about_screen.dart'; // ← AboutScreen を追加
+import 'about_screen.dart'; // AboutScreen を追加
 
 class MenuScreen extends StatefulWidget {
   const MenuScreen({super.key});
@@ -99,7 +100,23 @@ class _MenuScreenState extends State<MenuScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // トップに説明文追加
+            // ▼ Web のみ広告スペース
+            if (kIsWeb)
+              SizedBox(
+                height: 100, // 上部広告用スペース
+                child: Container(
+                  color: Colors.transparent, // 広告枠として見えない
+                  child: Center(
+                    child: Text(
+                      '広告スペース',
+                      style: TextStyle(color: Colors.grey[400]),
+                    ),
+                  ),
+                ),
+              ),
+            const SizedBox(height: 16),
+
+            // トップ説明文
             const Text(
               'このアプリは、自分がプレイしたパチスロのデータを記録・管理し、'
               '統計やグラフで分析できるツールです。勝ち方の指南はありません。',
