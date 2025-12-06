@@ -17,17 +17,10 @@
   <title>juggler_record_app</title>
   <link rel="manifest" href="manifest.json">
 
-  <!-- ▼ 全スマホ対応：アプリが広告に隠れないための安全領域 ▼ -->
   <style>
     body {
       margin: 0;
       padding: 0;
-    }
-
-    /* 広告に絶対に負けない安全領域（透明スペース） */
-    #app-safe-bottom {
-      width: 100%;
-      height: 120px; /* ← SP広告100px + マージン分 */
     }
   </style>
 </head>
@@ -35,14 +28,5 @@
 <body>
   <!-- Flutter Web アプリ本体 -->
   <script src="flutter_bootstrap.js" async></script>
-
-  <!-- ▼ Flutterアプリが広告に隠れないように下に透明スペース ▼ -->
-  <div id="app-safe-bottom"></div>
-
-  <!-- ▼ 忍者AdMax 広告（SP 320×100） ▼ -->
-  <div id="ad-container" style="width:100%; text-align:center; margin-top:16px;">
-    <script src="https://adm.shinobi.jp/s/774dcc91e84492347da7f8c65dbc3318"></script>
-  </div>
-
 </body>
 </html>
