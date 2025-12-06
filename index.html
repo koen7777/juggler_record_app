@@ -17,20 +17,43 @@
   <title>juggler_record_app</title>
   <link rel="manifest" href="manifest.json">
 
-  <!-- 🔥 追加：広告で隠れないように全体の下に余白を作る -->
+  <!-- ★★★ 忍者AdMax（SP 320×100）の固定広告を完全解除するCSS ★★★ -->
   <style>
+    /* 忍者AdMax が生成する固定 iframe を強制的に通常配置へ */
+    iframe[src*="shinobi.jp"] {
+      position: static !important;
+      bottom: auto !important;
+      top: auto !important;
+      z-index: 1 !important;
+      display: block !important;
+      margin: 0 auto !important;
+    }
+
+    /* 生成される wrapper div も固定解除 */
+    div[id^="shinobi"] {
+      position: static !important;
+      bottom: auto !important;
+      top: auto !important;
+      z-index: 1 !important;
+      display: block !important;
+      margin: 0 auto !important;
+    }
+
+    /* 広告サイズに合わせたアプリ側スペース（SP広告:高さ100px） */
     body {
-      padding-bottom: 120px; /* 広告の高さ分（必要なら調整） */
+      padding-bottom: 120px; /* ←必要に応じて調整OK */
     }
   </style>
 </head>
+
 <body>
-  <!-- Flutter Web 本体 -->
+  <!-- Flutter Web アプリ -->
   <script src="flutter_bootstrap.js" async></script>
 
-  <!-- 忍者AdMax広告 -->
+  <!-- 忍者AdMax広告コンテナ（SP 320×100） -->
   <div id="ad-container" style="width:100%; text-align:center; margin-top:16px;">
     <script src="https://adm.shinobi.jp/s/774dcc91e84492347da7f8c65dbc3318"></script>
   </div>
+
 </body>
 </html>
