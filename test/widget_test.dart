@@ -1,30 +1,24 @@
-// This is a basic Flutter widget test.
-//
-// To perform an interaction with a widget in your test, use the WidgetTester
-// utility in the flutter_test package. For example, you can send tap and scroll
-// gestures. You can also use WidgetTester to find child widgets in the widget
-// tree, read text, and verify that the values of widget properties are correct.
-
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:juggler_record_app/main.dart';
+import 'package:juggler_record_app/screens/menu_screen.dart';
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
-    await tester.pumpWidget(const MyApp());
+  testWidgets('MenuScreen displays correctly with top banner', (WidgetTester tester) async {
+    // 全画面共通ラッパーで MenuScreen を表示
+    await tester.pumpWidget(const AppWithBanner(child: MenuScreen()));
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
+    // MenuScreen のタイトルや主要テキストがあるか確認
+    expect(find.text('ジャグノート'), findsOneWidget); // MenuScreen 内タイトル例
+    expect(find.byType(ElevatedButton), findsWidgets); // ボタンがあるか確認
 
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
+    // 上部バナー（HtmlElementView）はテスト環境では無視されるため確認不可
+    // 代わりに Column 内に 2 つの子（広告スペース + MenuScreen）があることを確認
+    final columnFinder = find.byType(Column);
+    expect(columnFinder, findsOneWidget);
 
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+    final column = tester.widget<Column>(columnFinder);
+    expect(column.children.length, 2); // 上部広告 + MenuScreen
   });
 }
