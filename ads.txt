@@ -1,0 +1,2 @@
+# AdStir ads.txt for juggler_record_app
+adstir.com, MEDIA-d51fb80d, DIRECT, f08c47fec0942fa0
