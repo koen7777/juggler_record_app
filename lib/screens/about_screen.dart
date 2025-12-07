@@ -6,7 +6,14 @@ class AboutScreen extends StatelessWidget {
 
   Future<void> _openUrl(String url) async {
     final uri = Uri.parse(url);
-    await launchUrl(uri, mode: LaunchMode.externalApplication);
+
+    // Web / iOS / Android すべてで確実に開く
+    if (!await launchUrl(
+      uri,
+      mode: LaunchMode.externalApplication,
+    )) {
+      debugPrint('Could not launch $url');
+    }
   }
 
   @override
@@ -16,11 +23,11 @@ class AboutScreen extends StatelessWidget {
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text(
               'このアプリは、ユーザーが自分でプレイしたパチスロのデータを記録・管理し、'
-              '統計やグラフで分析できるツールです。アプリ内で勝ち方や攻略方法を提示するものではありません。',
+              '統計やグラフで分析できるWebアプリです。攻略情報を提供するものではありません。',
               style: TextStyle(fontSize: 14),
             ),
             const SizedBox(height: 16),
@@ -29,7 +36,7 @@ class AboutScreen extends StatelessWidget {
               '主な機能：\n'
               '・日付・店舗・台番号・差枚数などのプレイデータの保存\n'
               '・CSVによるデータのインポート・エクスポート\n'
-              '・記録データを基にした集計、グラフ表示',
+              '・集計、分析、グラフ表示\n',
               style: TextStyle(fontSize: 14),
             ),
             const SizedBox(height: 16),
@@ -40,7 +47,11 @@ class AboutScreen extends StatelessWidget {
               '・必ずCSVでバックアップしてください。\n'
               '・本アプリは18歳未満の方は利用できません。\n'
               '・本アプリの利用による損害について、作者は一切責任を負いません。',
-              style: TextStyle(color: Colors.red, fontSize: 13, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                color: Colors.red,
+                fontSize: 13,
+                fontWeight: FontWeight.bold,
+              ),
             ),
             const SizedBox(height: 16),
 
@@ -61,41 +72,31 @@ class AboutScreen extends StatelessWidget {
             ),
             const SizedBox(height: 24),
 
-            // --- ID5 オプトアウトリンク ---
+            const Divider(height: 32),
             const Text(
-              'ID5 プライバシーポリシー（オプトアウト）',
-              style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+              '広告サービス / プライバシーについて',
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
             ),
-            InkWell(
-              child: const Text(
-                'https://id5.io/jp/platform-privacy-policy/',
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Colors.blue,
-                  decoration: TextDecoration.underline,
-                ),
+            const SizedBox(height: 12),
+
+            const Text(
+              '本アプリでは、広告配信の最適化のため ID5 技術を利用しています。',
+              style: TextStyle(fontSize: 13),
+            ),
+            const SizedBox(height: 8),
+
+            // 🔗 🔗 🔗 ID5 オプトアウトリンク（重要）
+            TextButton(
+              onPressed: () => _openUrl(
+                "https://id5.io/jp/platform-privacy-policy/",
               ),
-              onTap: () => _openUrl('https://id5.io/jp/platform-privacy-policy/'),
+              child: const Text(
+                "ID5 プラットフォーム・プライバシーポリシー（オプトアウトはこちら）",
+                style: TextStyle(fontSize: 14),
+              ),
             ),
 
-            const SizedBox(height: 24),
-
-            // --- AdStir 公式ページ（広告利用ポリシー） ---
-            const Text(
-              '広告配信事業者（AdStir）について',
-              style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
-            ),
-            InkWell(
-              child: const Text(
-                'https://www.ad-stir.com/privacypolicy/',
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Colors.blue,
-                  decoration: TextDecoration.underline,
-                ),
-              ),
-              onTap: () => _openUrl('https://www.ad-stir.com/privacypolicy/'),
-            ),
+            const SizedBox(height: 16),
           ],
         ),
       ),
