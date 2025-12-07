@@ -18,6 +18,9 @@ dependencies:
   fl_chart: ^0.68.0
   flutter_date_pickers: ^0.4.3   # RangePicker用パッケージ
 
+  # ←← これを追加（URLリンクを開くためのパッケージ）
+  url_launcher: ^6.2.5
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
