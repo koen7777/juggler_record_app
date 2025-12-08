@@ -1,6 +1,7 @@
 // lib/screens/menu_screen.dart
 import 'dart:convert';
 import 'dart:html' as html;
+import 'dart:ui' as ui;
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'add_record_screen.dart';
@@ -9,7 +10,7 @@ import 'shops_screen.dart';
 import '../database/db_helper_web.dart';
 import '../models/record.dart';
 import 'data_list/data_list_screen.dart';
-import 'about_screen.dart'; // AboutScreen を追加
+import 'about_screen.dart';
 
 class MenuScreen extends StatefulWidget {
   const MenuScreen({super.key});
@@ -21,6 +22,47 @@ class MenuScreen extends StatefulWidget {
 class _MenuScreenState extends State<MenuScreen> {
   final dbHelper = DBHelperWeb();
 
+  @override
+  void initState() {
+    super.initState();
+
+    if (kIsWeb) {
+      // AdStir バナー用 HTMLビューの登録
+      // ignore: undefined_prefixed_name
+      ui.platformViewRegistry.registerViewFactory(
+        'adstir-banner',
+        (int viewId) {
+          final element = html.DivElement()
+            ..id = 'adstir-banner-area-$viewId'
+            ..style.width = '100%'
+            ..style.height = '100px'
+            ..style.margin = '0'
+            ..style.padding = '0'
+            ..setInnerHtml(
+              '''
+              <div id="adstir_$viewId"></div>
+              <script type="text/javascript">
+                var adstir_vars = {
+                  ver: "4.0",
+                  app_id: "MEDIA-d51fb80d",
+                  ad_spot: 1,
+                  center: true
+                };
+              </script>
+              <script src="https://js.ad-stir.com/js/adstir.js"></script>
+              ''',
+              validator: html.NodeValidatorBuilder()
+                ..allowHtml5()
+                ..allowElement('script', attributes: ['src', 'type'])
+                ..allowElement('div', attributes: ['id']),
+            );
+
+          return element;
+        },
+      );
+    }
+  }
+
   Future<void> _exportCSV() async {
     final records = await dbHelper.getRecords();
     if (records.isEmpty) {
@@ -31,8 +73,8 @@ class _MenuScreenState extends State<MenuScreen> {
     }
 
     final header = [
-      '日付','機種名','店舗名','台番号','総回転数','差枚',
-      'BIG','REG','重複BIG','重複REG','チェリー','ぶどう'
+      '日付', '機種名', '店舗名', '台番号', '総回転数', '差枚',
+      'BIG', 'REG', '重複BIG', '重複REG', 'チェリー', 'ぶどう'
     ];
     final rows = records.map((r) => r.toCsvRow().join(',')).join('\n');
     final csvData = '${header.join(',')}\n$rows';
@@ -77,7 +119,6 @@ class _MenuScreenState extends State<MenuScreen> {
           if (cols.length < 12) continue;
 
           final record = Record.fromCsvRow(cols.map((e) => e.trim()).toList());
-
           await dbHelper.insertRecord(record);
 
           if (record.shop.trim().isNotEmpty) {
@@ -100,23 +141,16 @@ class _MenuScreenState extends State<MenuScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // ▼ Web のみ広告スペース
+            // ▼ Web のみ広告スペース（完全固定表示）
             if (kIsWeb)
-              SizedBox(
-                height: 100, // 上部広告用スペース
-                child: Container(
-                  color: Colors.transparent, // 広告枠として見えない
-                  child: Center(
-                    child: Text(
-                      '広告スペース',
-                      style: TextStyle(color: Colors.grey[400]),
-                    ),
-                  ),
-                ),
+              const SizedBox(
+                height: 100,
+                child: HtmlElementView(viewType: 'adstir-banner'),
               ),
+
             const SizedBox(height: 16),
 
-            // トップ説明文
+            // 説明文
             const Text(
               'このアプリは、自分がプレイしたパチスロのデータを記録・管理し、'
               '統計やグラフで分析できるツールです。勝ち方の指南はありません。',
@@ -141,25 +175,27 @@ class _MenuScreenState extends State<MenuScreen> {
             const Divider(),
             const SizedBox(height: 12),
 
-            // CSV操作ボタン
+            // CSV 系ボタン
             _coloredButton(
               context,
               'CSVをエクスポート（保存）',
               _exportCSV,
-              backgroundColor: Colors.orange[200]!,
-              textColor: Colors.black,
+              backgroundColor: Colors.orange,
+              textColor: Colors.white,
             ),
             const SizedBox(height: 12),
+
             _coloredButton(
               context,
               'CSVをインポート（読み込み）',
               _importCSV,
-              backgroundColor: Colors.orange[200]!,
-              textColor: Colors.black,
+              backgroundColor: Colors.orange,
+              textColor: Colors.white,
             ),
-            const SizedBox(height: 12),
 
-            // 注意文
+            const SizedBox(height: 16),
+
+            // 注意書き
             Container(
               padding: const EdgeInsets.all(12),
               color: Colors.red[50],
@@ -173,9 +209,10 @@ class _MenuScreenState extends State<MenuScreen> {
                 textAlign: TextAlign.center,
               ),
             ),
+
             const SizedBox(height: 12),
 
-            // 「このアプリについて」ボタン
+            // About
             _coloredButton(
               context,
               'このアプリについて',
