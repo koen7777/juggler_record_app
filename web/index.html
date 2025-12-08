@@ -7,7 +7,6 @@
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
   <meta name="description" content="自分がプレイしたパチスロのデータを記録・管理できるWebアプリです。統計やグラフでプレイ内容を分析できます。">
 
-  <!-- iOS meta tags & icons -->
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black">
   <meta name="apple-mobile-web-app-title" content="juggler_record_app">
@@ -20,16 +19,16 @@
   <style>
     body {
       margin: 0;
-      padding-top: 100px; /* ▼ 広告の高さを埋める */
+      padding-top: 100px; /* 広告ぶん押し下げる */
     }
 
-    /* ▼ Flutter を広告より下に下げる */
+    /* Flutter が広告より後ろだがタップ可能に */
     flutter-view, canvas, #flt-glass-pane {
       z-index: 1 !important;
       position: relative !important;
     }
 
-    /* ▼ 広告を確実に最前面にする */
+    /* 広告：見えるけどタップは下へ通す */
     #ad-banner-fixed {
       position: fixed;
       top: 0;
@@ -39,13 +38,14 @@
       background: #f5f5f5;
       text-align: center;
       z-index: 99999;
+      pointer-events: none; /* ←ここが重要！ */
     }
   </style>
 </head>
 
 <body>
 
-  <!-- ▼ 上部に固定広告 -->
+  <!-- 固定広告 -->
   <div id="ad-banner-fixed">
     <script type="text/javascript">
       var adstir_vars = {
@@ -58,7 +58,6 @@
     <script type="text/javascript" src="https://js.ad-stir.com/js/adstir.js"></script>
   </div>
 
-  <!-- Flutter Web アプリ本体 -->
   <script src="flutter_bootstrap.js" async></script>
 </body>
 </html>
