@@ -3,7 +3,7 @@
 import 'dart:convert';
 import 'dart:html' as html;
 
-// ★ Flutter Web: HTML element を表示するため
+// Flutter Web: HTML element を表示
 import 'dart:ui_web' as ui;
 
 import 'package:flutter/foundation.dart' show kIsWeb;
@@ -32,37 +32,48 @@ class _MenuScreenState extends State<MenuScreen> {
     super.initState();
 
     if (kIsWeb) {
-      // ---- AdStir バナー HTML要素を登録 ----
+      // ---- AdStir 広告用 viewType 登録 ----
       ui.platformViewRegistry.registerViewFactory(
         'adstir-banner',
         (int viewId) {
-          final element = html.DivElement()
-            ..id = 'adstir-banner-area-$viewId'
+          final container = html.DivElement()
+            ..id = 'adstir-area-$viewId'
             ..style.width = '320px'
             ..style.height = '100px'
             ..style.margin = '0'
             ..style.padding = '0'
-            ..style.overflow = 'hidden'
-            ..setInnerHtml(
-              '''
-              <div id="adstir_$viewId" style="width:320px; height:100px;"></div>
-              <script type="text/javascript">
-                var adstir_vars = {
-                  ver: "4.0",
-                  app_id: "MEDIA-d51fb80d",
-                  ad_spot: 1,
-                  center: true
-                };
-              </script>
-              <script src="https://js.ad-stir.com/js/adstir.js"></script>
-              ''',
-              validator: html.NodeValidatorBuilder()
-                ..allowHtml5()
-                ..allowElement('script', attributes: ['src', 'type'])
-                ..allowElement('div', attributes: ['id', 'style']),
-            );
+            ..style.overflow = 'hidden';
 
-          return element;
+          // ① AdStir 本体の div
+          final adDiv = html.DivElement()
+            ..id = 'adstir_$viewId'
+            ..style.width = '320px'
+            ..style.height = '100px';
+
+          container.append(adDiv);
+
+          // ② 設定スクリプト (adstir_vars)
+          final configScript = html.ScriptElement()
+            ..type = 'text/javascript'
+            ..text = '''
+              window.adstir_vars = {
+                ver: "4.0",
+                app_id: "MEDIA-d51fb80d",
+                ad_spot: 1,
+                center: true
+              };
+            ''';
+
+          container.append(configScript);
+
+          // ③ adstir.js 本体をロード（append で確実に評価させる）
+          final jsScript = html.ScriptElement()
+            ..type = 'text/javascript'
+            ..src = "https://js.ad-stir.com/js/adstir.js";
+
+          container.append(jsScript);
+
+          return container;
         },
       );
     }
@@ -125,7 +136,9 @@ class _MenuScreenState extends State<MenuScreen> {
           final cols = raw.split(',');
           if (cols.length < 12) continue;
 
-          final record = Record.fromCsvRow(cols.map((e) => e.trim()).toList());
+          final record = Record.fromCsvRow(
+            cols.map((e) => e.trim()).toList(),
+          );
           await dbHelper.insertRecord(record);
 
           if (record.shop.trim().isNotEmpty) {
@@ -148,15 +161,14 @@ class _MenuScreenState extends State<MenuScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // ---- Web広告：中央に 320×100 固定 ----
+            // ---- AdStir バナー（320×100） ----
             if (kIsWeb)
               Padding(
                 padding: const EdgeInsets.only(bottom: 16),
                 child: Center(
-                  child: Container(
+                  child: SizedBox(
                     width: 320,
                     height: 100,
-                    color: Colors.transparent,
                     child: const HtmlElementView(viewType: 'adstir-banner'),
                   ),
                 ),
