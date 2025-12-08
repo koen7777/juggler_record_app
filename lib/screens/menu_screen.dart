@@ -3,7 +3,7 @@
 import 'dart:convert';
 import 'dart:html' as html;
 
-// ★ Flutter Web 用（platformViewRegistry）
+// ★ Flutter Web: HTML element を表示するため
 import 'dart:ui_web' as ui;
 
 import 'package:flutter/foundation.dart' show kIsWeb;
@@ -42,6 +42,7 @@ class _MenuScreenState extends State<MenuScreen> {
             ..style.height = '100px'
             ..style.margin = '0'
             ..style.padding = '0'
+            ..style.overflow = 'hidden'
             ..setInnerHtml(
               '''
               <div id="adstir_$viewId" style="width:320px; height:100px;"></div>
@@ -152,9 +153,10 @@ class _MenuScreenState extends State<MenuScreen> {
               Padding(
                 padding: const EdgeInsets.only(bottom: 16),
                 child: Center(
-                  child: SizedBox(
+                  child: Container(
                     width: 320,
                     height: 100,
+                    color: Colors.transparent,
                     child: const HtmlElementView(viewType: 'adstir-banner'),
                   ),
                 ),
