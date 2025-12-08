@@ -3,7 +3,7 @@
 import 'dart:convert';
 import 'dart:html' as html;
 
-// ★ Flutter Web 用（platformViewRegistryはこちら）
+// ★ Flutter Web 用（platformViewRegistry）
 import 'dart:ui_web' as ui;
 
 import 'package:flutter/foundation.dart' show kIsWeb;
@@ -32,19 +32,19 @@ class _MenuScreenState extends State<MenuScreen> {
     super.initState();
 
     if (kIsWeb) {
-      // ---- AdStir 広告用 HTML要素を登録 ----
+      // ---- AdStir バナー HTML要素を登録 ----
       ui.platformViewRegistry.registerViewFactory(
         'adstir-banner',
         (int viewId) {
           final element = html.DivElement()
             ..id = 'adstir-banner-area-$viewId'
-            ..style.width = '100%'
+            ..style.width = '320px'
             ..style.height = '100px'
             ..style.margin = '0'
             ..style.padding = '0'
             ..setInnerHtml(
               '''
-              <div id="adstir_$viewId" style="width:100%; height:100px;"></div>
+              <div id="adstir_$viewId" style="width:320px; height:100px;"></div>
               <script type="text/javascript">
                 var adstir_vars = {
                   ver: "4.0",
@@ -147,14 +147,18 @@ class _MenuScreenState extends State<MenuScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // ---- Web広告（100px固定）----
+            // ---- Web広告：中央に 320×100 固定 ----
             if (kIsWeb)
-              const SizedBox(
-                height: 100,
-                child: HtmlElementView(viewType: 'adstir-banner'),
+              Padding(
+                padding: const EdgeInsets.only(bottom: 16),
+                child: Center(
+                  child: SizedBox(
+                    width: 320,
+                    height: 100,
+                    child: const HtmlElementView(viewType: 'adstir-banner'),
+                  ),
+                ),
               ),
-
-            const SizedBox(height: 16),
 
             const Text(
               'このアプリは、自分がプレイしたパチスロのデータを記録・管理し、'
