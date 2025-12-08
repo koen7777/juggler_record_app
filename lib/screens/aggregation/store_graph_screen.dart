@@ -1,3 +1,4 @@
+// lib/screens/store_graph_screen.dart
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import '../../models/record.dart';
@@ -94,6 +95,7 @@ class _StoreGraphScreenState extends State<StoreGraphScreen> {
       body: Column(
         children: [
           const SizedBox(height: 16),
+
           // -----------------------------
           // 緑の切り替えボタン
           // -----------------------------
@@ -141,12 +143,13 @@ class _StoreGraphScreenState extends State<StoreGraphScreen> {
                   // -------------------------
                   ? LineChart(
                       LineChartData(
-                        minY: adjustedMinY,
-                        maxY: adjustedMaxY,
+                        minY: adjustedMinY.toDouble(),
+                        maxY: adjustedMaxY.toDouble(),
                         lineBarsData: [
                           LineChartBarData(
                             spots: spots,
-                            isCurved: false, // 折れ線に
+                            isCurved: false, // 折れ線（カクカク）
+                            // isCurved: true, // 滑らかにしたい場合はこちら
                             barWidth: 2,
                             color: Colors.orange,
                             dotData: FlDotData(show: true),
@@ -166,7 +169,8 @@ class _StoreGraphScreenState extends State<StoreGraphScreen> {
                                 final label = dd.length >= 10
                                     ? dd.substring(8, 10)
                                     : dd;
-                                return Text(label, style: const TextStyle(fontSize: 10));
+                                return Text(label,
+                                    style: const TextStyle(fontSize: 10));
                               },
                             ),
                           ),

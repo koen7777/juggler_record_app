@@ -9,6 +9,7 @@ import '../aggregation/total_summary_screen.dart';
 import '../aggregation/tail_summary_screen.dart'; // 
 import '../aggregation/specific_day_summary_screen.dart';
 
+
 // 🟢 メニュー用クラス
 class MenuItem {
   final String title;
@@ -265,7 +266,7 @@ class _DataListScreenState extends State<DataListScreen> {
       MenuItem("店舗別", Icons.store, const ShopSummaryScreen()),
       MenuItem("通算", Icons.assessment, const TotalSummaryScreen()),
       MenuItem("末尾別", Icons.tag, const TailSummaryScreen()),
-      MenuItem("特定日", Icons.star, SpecificDaySummaryScreen()),
+      MenuItem("特定日", Icons.star, const SpecificDaySummaryScreen()),
 
     ];
 
