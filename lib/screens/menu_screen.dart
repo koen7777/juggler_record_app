@@ -1,9 +1,14 @@
 // lib/screens/menu_screen.dart
+
 import 'dart:convert';
 import 'dart:html' as html;
-import 'dart:ui' as ui;
+
+// ★ Flutter Web 用（platformViewRegistryはこちら）
+import 'dart:ui_web' as ui;
+
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
+
 import 'add_record_screen.dart';
 import 'view_records_screen.dart';
 import 'shops_screen.dart';
@@ -27,8 +32,7 @@ class _MenuScreenState extends State<MenuScreen> {
     super.initState();
 
     if (kIsWeb) {
-      // AdStir バナー用 HTMLビューの登録
-      // ignore: undefined_prefixed_name
+      // ---- AdStir 広告用 HTML要素を登録 ----
       ui.platformViewRegistry.registerViewFactory(
         'adstir-banner',
         (int viewId) {
@@ -40,7 +44,7 @@ class _MenuScreenState extends State<MenuScreen> {
             ..style.padding = '0'
             ..setInnerHtml(
               '''
-              <div id="adstir_$viewId"></div>
+              <div id="adstir_$viewId" style="width:100%; height:100px;"></div>
               <script type="text/javascript">
                 var adstir_vars = {
                   ver: "4.0",
@@ -54,7 +58,7 @@ class _MenuScreenState extends State<MenuScreen> {
               validator: html.NodeValidatorBuilder()
                 ..allowHtml5()
                 ..allowElement('script', attributes: ['src', 'type'])
-                ..allowElement('div', attributes: ['id']),
+                ..allowElement('div', attributes: ['id', 'style']),
             );
 
           return element;
@@ -63,6 +67,7 @@ class _MenuScreenState extends State<MenuScreen> {
     }
   }
 
+  // CSV エクスポート
   Future<void> _exportCSV() async {
     final records = await dbHelper.getRecords();
     if (records.isEmpty) {
@@ -90,6 +95,7 @@ class _MenuScreenState extends State<MenuScreen> {
         .showSnackBar(const SnackBar(content: Text('CSVをエクスポートしました')));
   }
 
+  // CSV インポート
   void _importCSV() {
     final uploadInput = html.FileUploadInputElement()..accept = '.csv';
     uploadInput.click();
@@ -141,7 +147,7 @@ class _MenuScreenState extends State<MenuScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // ▼ Web のみ広告スペース（完全固定表示）
+            // ---- Web広告（100px固定）----
             if (kIsWeb)
               const SizedBox(
                 height: 100,
@@ -150,19 +156,14 @@ class _MenuScreenState extends State<MenuScreen> {
 
             const SizedBox(height: 16),
 
-            // 説明文
             const Text(
               'このアプリは、自分がプレイしたパチスロのデータを記録・管理し、'
               '統計やグラフで分析できるツールです。勝ち方の指南はありません。',
               textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.black87,
-              ),
+              style: TextStyle(fontSize: 14, color: Colors.black87),
             ),
             const SizedBox(height: 16),
 
-            // メニュー
             _menuButton(context, 'データ入力', const AddRecordScreen()),
             const SizedBox(height: 12),
             _menuButton(context, 'データ閲覧', const ViewRecordsScreen()),
@@ -175,7 +176,6 @@ class _MenuScreenState extends State<MenuScreen> {
             const Divider(),
             const SizedBox(height: 12),
 
-            // CSV 系ボタン
             _coloredButton(
               context,
               'CSVをエクスポート（保存）',
@@ -195,7 +195,6 @@ class _MenuScreenState extends State<MenuScreen> {
 
             const SizedBox(height: 16),
 
-            // 注意書き
             Container(
               padding: const EdgeInsets.all(12),
               color: Colors.red[50],
@@ -212,7 +211,6 @@ class _MenuScreenState extends State<MenuScreen> {
 
             const SizedBox(height: 12),
 
-            // About
             _coloredButton(
               context,
               'このアプリについて',
