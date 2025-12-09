@@ -1,5 +1,9 @@
+// lib/screens/menu_screen.dart
+
 import 'dart:convert';
 import 'dart:html' as html;
+
+// Flutter Web: HTML element を表示
 import 'dart:ui_web' as ui;
 
 import 'package:flutter/foundation.dart' show kIsWeb;
@@ -28,17 +32,19 @@ class _MenuScreenState extends State<MenuScreen> {
     super.initState();
 
     if (kIsWeb) {
+      // ---- AdStir 広告用 viewType 登録 ----
       ui.platformViewRegistry.registerViewFactory(
-        'adstir-banner-fixed',
+        'adstir-banner',
         (int viewId) {
           final container = html.DivElement()
-            ..id = 'adstir-bottom-$viewId'
+            ..id = 'adstir-area-$viewId'
             ..style.width = '320px'
             ..style.height = '100px'
             ..style.margin = '0'
             ..style.padding = '0'
             ..style.overflow = 'hidden';
 
+          // ① AdStir 本体の div
           final adDiv = html.DivElement()
             ..id = 'adstir_$viewId'
             ..style.width = '320px'
@@ -46,6 +52,7 @@ class _MenuScreenState extends State<MenuScreen> {
 
           container.append(adDiv);
 
+          // ② 設定スクリプト (adstir_vars)
           final configScript = html.ScriptElement()
             ..type = 'text/javascript'
             ..text = '''
@@ -59,6 +66,7 @@ class _MenuScreenState extends State<MenuScreen> {
 
           container.append(configScript);
 
+          // ③ adstir.js 本体をロード（append で確実に評価させる）
           final jsScript = html.ScriptElement()
             ..type = 'text/javascript'
             ..src = "https://js.ad-stir.com/js/adstir.js";
@@ -71,7 +79,7 @@ class _MenuScreenState extends State<MenuScreen> {
     }
   }
 
-  // CSV Export
+  // CSV エクスポート
   Future<void> _exportCSV() async {
     final records = await dbHelper.getRecords();
     if (records.isEmpty) {
@@ -99,7 +107,7 @@ class _MenuScreenState extends State<MenuScreen> {
         .showSnackBar(const SnackBar(content: Text('CSVをエクスポートしました')));
   }
 
-  // CSV Import
+  // CSV インポート
   void _importCSV() {
     final uploadInput = html.FileUploadInputElement()..accept = '.csv';
     uploadInput.click();
@@ -148,35 +156,31 @@ class _MenuScreenState extends State<MenuScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('メニュー')),
-
-      // ★ 広告は bottomNavigationBar で下固定
-      bottomNavigationBar: kIsWeb
-          ? Container(
-              height: 100,
-              width: double.infinity,
-              color: Colors.transparent,
-              child: const Center(
-                child: SizedBox(
-                  width: 320,
-                  height: 100,
-                  child: HtmlElementView(viewType: 'adstir-banner-fixed'),
-                ),
-              ),
-            )
-          : null,
-
       body: SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(16, 16, 16, 120), // ← 広告分の余白
+        padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            // ---- AdStir バナー（320×100） ----
+            if (kIsWeb)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 16),
+                child: Center(
+                  child: SizedBox(
+                    width: 320,
+                    height: 100,
+                    child: const HtmlElementView(viewType: 'adstir-banner'),
+                  ),
+                ),
+              ),
+
             const Text(
               'このアプリは、自分がプレイしたパチスロのデータを記録・管理し、'
               '統計やグラフで分析できるツールです。勝ち方の指南はありません。',
               textAlign: TextAlign.center,
               style: TextStyle(fontSize: 14, color: Colors.black87),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 16),
 
             _menuButton(context, 'データ入力', const AddRecordScreen()),
             const SizedBox(height: 12),
@@ -206,7 +210,8 @@ class _MenuScreenState extends State<MenuScreen> {
               backgroundColor: Colors.orange,
               textColor: Colors.white,
             ),
-            const SizedBox(height: 20),
+
+            const SizedBox(height: 16),
 
             Container(
               padding: const EdgeInsets.all(12),
@@ -221,7 +226,8 @@ class _MenuScreenState extends State<MenuScreen> {
                 textAlign: TextAlign.center,
               ),
             ),
-            const SizedBox(height: 20),
+
+            const SizedBox(height: 12),
 
             _coloredButton(
               context,
