@@ -1,31 +1,42 @@
 <!DOCTYPE html>
 <html>
 <head>
+  <!-- ★ Flutter Web 必須 base href -->
   <base href="/juggler_record_app/">
 
   <meta charset="UTF-8">
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
 
-  <!-- ★ スマホで 320px 広告を正しく表示させるため必須 -->
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <!-- ★ Webアプリの説明 -->
+  <meta name="description" content="自分がプレイしたパチスロのデータを記録・管理できるWebアプリです。統計やグラフで分析できます。">
 
-  <!-- 説明文 -->
-  <meta name="description" content="自分がプレイしたパチスロのデータを記録・管理できるWebアプリです。統計やグラフでプレイ内容を分析できます。">
+  <!-- ★ viewport（スマホでの表示に必須） -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 
   <!-- iOS meta tags & icons -->
   <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black">
-  <meta name="apple-mobile-web-app-title" content="juggler_record_app">
+  <meta name="apple-mobile-web-app-title" content="ジャグノート">
+
   <link rel="apple-touch-icon" href="icons/Icon-192.png">
 
+  <!-- favicon -->
   <link rel="icon" type="image/png" href="favicon.png"/>
-  <title>juggler_record_app</title>
+
+  <!-- manifest.json -->
   <link rel="manifest" href="manifest.json">
+
+  <!-- ★ AdStir の最適化用 meta（任意）-->
+  <meta name="adstir-site-verification" content="MEDIA-d51fb80d">
+
+  <title>ジャグノート</title>
 
   <style>
     body {
       margin: 0;
       padding: 0;
+      overflow-x: hidden;
       background: #ffffff;
     }
   </style>
