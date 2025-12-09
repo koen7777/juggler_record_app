@@ -1,49 +1,66 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <!-- ★ Flutter Web 必須 base href -->
   <base href="$FLUTTER_BASE_HREF">
 
   <meta charset="UTF-8">
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="自分がプレイしたパチスロのデータを記録・管理できるWebアプリです。">
 
-  <!-- ★ Webアプリの説明 -->
-  <meta name="description" content="自分がプレイしたパチスロのデータを記録・管理できるWebアプリです。統計やグラフで分析できます。">
-
-  <!-- ★ viewport（スマホでの表示に必須） -->
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-
-  <!-- iOS meta tags & icons -->
+  <!-- iOS PWA -->
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black">
   <meta name="apple-mobile-web-app-title" content="ジャグノート">
 
   <link rel="apple-touch-icon" href="icons/Icon-192.png">
-
-  <!-- favicon -->
   <link rel="icon" type="image/png" href="favicon.png"/>
-
-  <!-- manifest.json -->
   <link rel="manifest" href="manifest.json">
 
-  <!-- ★ AdStir の最適化用 meta（任意）-->
-  <meta name="adstir-site-verification" content="MEDIA-d51fb80d">
-
   <title>ジャグノート</title>
+
+  <!-- ▼ AdStir 広告タグ（Flutter Web でも消えない場所） -->
+  <script type="text/javascript">
+    var adstir_vars = {
+      ver: "4.0",
+      app_id: "MEDIA-d51fb80d",
+      ad_spot: 1,
+      center: false
+    };
+  </script>
+  <script type="text/javascript" src="https://js.ad-stir.com/js/adstir.js"></script>
 
   <style>
     body {
       margin: 0;
       padding: 0;
       overflow-x: hidden;
+    }
+    /* Flutter描画エリアの下に広告 */
+    #ad-container {
+      width: 100%;
+      text-align: center;
+      position: fixed;
+      bottom: 0;
+      left: 0;
       background: #ffffff;
+      height: 100px; /* 広告枠の高さ */
+      z-index: 9999;
     }
   </style>
+
 </head>
 
 <body>
-  <!-- Flutter Web アプリ本体 -->
+
+  <!-- ▼ Flutterが上書きできない広告領域 -->
+  <div id="ad-container">
+    <div id="adstir"></div>
+  </div>
+
+  <!-- ▼ Flutterアプリ本体 -->
   <script src="flutter_bootstrap.js" async></script>
+
 </body>
 </html>
