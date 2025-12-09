@@ -2,69 +2,69 @@
 <html>
 <head>
   <base href="/juggler_record_app/">
-
   <meta charset="UTF-8" />
-  <meta content="IE=Edge" http-equiv="X-UA-Compatible" />
-  <meta name="description" content="Juggler Record App" />
-
-  <meta name="viewport"
-        content="width=device-width, initial-scale=1.0, user-scalable=no" />
-
-  <title>Juggler Record App</title>
-
-  <link rel="manifest" href="manifest.json" />
-
-  <script>
-    // Flutter loader
-    const serviceWorkerVersion = "1978110765";
-  </script>
-  <script defer src="flutter.js"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
   <style>
-    /* Flutterアプリ全体を広告ぶん持ち上げる */
-    #flutter_container {
-      position: relative;
+    html, body {
+      margin: 0;
+      padding: 0;
       width: 100%;
-      height: calc(100vh - 100px); /* ←320×100広告の高さぶん */
-      overflow: hidden;
+      height: 100%;
+      overflow: auto; /* ←スクロール有効 */
     }
 
-    /* 下部固定広告枠 */
+    /* ★ Flutter全体を普通に表示（100vhのまま） */
+    #flutter_container {
+      width: 100%;
+      height: 100%; /* ←ここを縮めないのが重要 */
+    }
+
+    /* ★ アプリ最下部の余白（広告避け） */
+    body {
+      padding-bottom: 100px; /* ←広告分のスペース */
+      box-sizing: border-box;
+    }
+
+    /* ★ 固定広告 */
     #adstir_banner {
       position: fixed;
       bottom: 0;
       left: 0;
       width: 100%;
-      height: 100px;        /* ←重要 */
-      background: #f0f0f0;  /* 読み込み前にグレーで確保 */
+      height: 100px;
+      background: #eee;
       display: flex;
       justify-content: center;
       align-items: center;
-      z-index: 99999;
+      z-index: 9999;
     }
   </style>
+
+  <script>
+    const serviceWorkerVersion = "1081132625";
+  </script>
+  <script defer src="flutter.js"></script>
 </head>
 
 <body>
 
-  <!-- Flutterアプリを入れるコンテナ -->
   <div id="flutter_container">
     <script>
-      window.addEventListener('load', function() {
+      window.addEventListener('load', function () {
         _flutter.loader.loadEntrypoint({
-          onEntrypointLoaded: function(engineInitializer) {
-            engineInitializer.initializeEngine().then(function(appRunner) {
+          onEntrypointLoaded: function (engineInitializer) {
+            engineInitializer.initializeEngine().then(function (appRunner) {
               appRunner.runApp();
             });
-          }
+          },
         });
       });
     </script>
   </div>
 
-  <!-- 固定広告領域 -->
+  <!-- 固定広告 -->
   <div id="adstir_banner">
-    <!-- ↓ここにあなたの広告タグを入れるだけ -->
     <script type="text/javascript">
       var adstir_vars = {
         ver: "4.0",
