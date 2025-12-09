@@ -1,79 +1,49 @@
 <!DOCTYPE html>
 <html>
 <head>
+  <!-- ★ Flutter Web 必須 base href -->
+  <base href="$FLUTTER_BASE_HREF">
+
   <meta charset="UTF-8">
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
-  <meta name="description" content="A new Flutter project.">
 
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Flutter App</title>
+  <!-- ★ Webアプリの説明 -->
+  <meta name="description" content="自分がプレイしたパチスロのデータを記録・管理できるWebアプリです。統計やグラフで分析できます。">
 
+  <!-- ★ viewport（スマホでの表示に必須） -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+
+  <!-- iOS meta tags & icons -->
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="apple-mobile-web-app-title" content="ジャグノート">
+
+  <link rel="apple-touch-icon" href="icons/Icon-192.png">
+
+  <!-- favicon -->
+  <link rel="icon" type="image/png" href="favicon.png"/>
+
+  <!-- manifest.json -->
   <link rel="manifest" href="manifest.json">
 
-  <!-- Flutter -->
-  <script src="flutter.js" defer></script>
+  <!-- ★ AdStir の最適化用 meta（任意）-->
+  <meta name="adstir-site-verification" content="MEDIA-d51fb80d">
 
-  <!-- ------------------------------- -->
-  <!-- ★ AdStir 広告（グローバル設定） -->
-  <!-- ------------------------------- -->
-  <script type="text/javascript">
-    window.adstir_vars = {
-      ver: "4.0",
-      app_id: "MEDIA-d51fb80d",   // ★あなたの AdStir App ID
-      ad_spot: 1,
-      center: true
-    };
-  </script>
-  <script type="text/javascript" src="https://js.ad-stir.com/js/adstir.js"></script>
+  <title>ジャグノート</title>
 
   <style>
-    /* ページ下部の固定広告 */
-    #adstir-banner-fixed {
-      width: 100%;
-      max-width: 320px;
-      height: 100px;
-      margin: 0 auto;
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      z-index: 9999;
-      background: #fff;
-      text-align: center;
-    }
-
-    /* Flutter canvas が広告に被らないよう余白を追加 */
     body {
-      padding-bottom: 110px;
+      margin: 0;
+      padding: 0;
+      overflow-x: hidden;
+      background: #ffffff;
     }
   </style>
 </head>
 
 <body>
-
-  <!-- Flutter Canvas -->
-  <div id="flutter_target"></div>
-
-  <!-- ------------------------------- -->
-  <!-- ★ ページ最下部に固定表示する AdStir -->
-  <!-- ------------------------------- -->
-  <div id="adstir-banner-fixed">
-    <div id="adstir-spot-1" style="width:320px; height:100px; margin:0 auto;"></div>
-  </div>
-
-  <script>
-    window.addEventListener('load', function () {
-      _flutter.loader.loadEntrypoint({
-        serviceWorker: {
-          serviceWorkerVersion: serviceWorkerVersion,
-        }
-      }).then(function(engineInitializer) {
-        return engineInitializer.initializeEngine();
-      }).then(function(appRunner) {
-        return appRunner.runApp();
-      });
-    });
-  </script>
-
+  <!-- Flutter Web アプリ本体 -->
+  <script src="flutter_bootstrap.js" async></script>
 </body>
 </html>
