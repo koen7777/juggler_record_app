@@ -12,44 +12,39 @@
       padding: 0;
     }
 
-    /* ▼ Flutter アプリ領域に広告分 + iOSホームバー分の余白を確保 */
+    /* Flutter アプリ領域の下に広告分 + safe-area 分の余白を確保 */
     body {
       padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 100px);
       box-sizing: border-box;
     }
 
-    /* ▼ 最下部固定 320×100 広告コンテナ */
+    /* ⭐ 重要：中央寄せ固定広告 */
     #adstir_banner {
       position: fixed;
       bottom: env(safe-area-inset-bottom, 0px);
-      left: 0;
-      right: 0;
+      left: 50%;                     /* 中央寄せその1 */
+      transform: translateX(-50%);   /* 中央寄せその2 */
+      width: 320px;
       height: 100px;
-
+      z-index: 99999;
       display: flex;
       justify-content: center;
       align-items: center;
-
-      z-index: 99999;
       background: transparent;
-
-      pointer-events: none; /* ← Flutter側を触れるように */
     }
 
-    /* ▼ 広告本体だけ pointer 有効にする */
     #adstir_slot {
       width: 320px;
       height: 100px;
-      pointer-events: auto; /* ← 広告クリックだけ有効 */
     }
   </style>
 </head>
 
 <body>
-  <!-- Flutter Web 本体 -->
+  <!-- Flutter -->
   <script src="flutter_bootstrap.js" async></script>
 
-  <!-- ▼▼ AdStir 固定広告 ▼▼ -->
+  <!-- 下部固定広告 -->
   <div id="adstir_banner">
     <div id="adstir_slot"></div>
 
@@ -58,12 +53,10 @@
         ver: "4.0",
         app_id: "MEDIA-d51fb80d",
         ad_spot: 1,
-        center: true /* ← 完全中央表示 */
+        center: false
       };
     </script>
     <script type="text/javascript" src="https://js.ad-stir.com/js/adstir.js"></script>
   </div>
-  <!-- ▲▲ AdStir 固定広告 ▲▲ -->
-
 </body>
 </html>
