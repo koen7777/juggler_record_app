@@ -66,7 +66,7 @@ class _MenuScreenState extends State<MenuScreen> {
 
           container.append(configScript);
 
-          // ③ adstir.js 本体をロード（append で確実に評価させる）
+          // ③ adstir.js 本体をロード
           final jsScript = html.ScriptElement()
             ..type = 'text/javascript'
             ..src = "https://js.ad-stir.com/js/adstir.js";
@@ -157,7 +157,12 @@ class _MenuScreenState extends State<MenuScreen> {
     return Scaffold(
       appBar: AppBar(title: const Text('メニュー')),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.only(
+          top: 0,   // ← 上の余白を削除
+          left: 16,
+          right: 16,
+          bottom: 16,
+        ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
