@@ -2,50 +2,63 @@
 <html>
 <head>
   <base href="$FLUTTER_BASE_HREF">
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+
   <style>
-    body {
+    html, body {
+      height: 100%;
       margin: 0;
-      padding-bottom: 120px;
+      padding: 0;
     }
+
+    /* ⚠️ ここが肝：広告高さ分 + iOS safe-area を確保する */
+    body {
+      /* safe-area-inset-bottom を足しておく（iOSホームインジケーター対策） */
+      padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 100px);
+      box-sizing: border-box;
+    }
+
+    /* 固定広告 */
     #adstir_banner {
       position: fixed;
-      bottom: 0;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 320px;
+      bottom: env(safe-area-inset-bottom, 0px); /* iPhoneの下余白を考慮 */
+      left: 0;
+      right: 0;
       height: 100px;
+      display:flex;
+      justify-content:center;
+      align-items:center;
       z-index: 99999;
       background: transparent;
+      pointer-events: auto; /* 広告は触れるように（ただしアプリ領域は余白で避ける） */
     }
+
+    /* 広告内部の指定サイズボックス（中央に320x100を置く） */
     #adstir_slot {
       width: 320px;
       height: 100px;
+      margin: 0 auto;
     }
   </style>
 </head>
-
 <body>
-
-  <!-- Flutter -->
+  <!-- Flutter 本体 -->
   <script src="flutter_bootstrap.js" async></script>
 
-  <!-- AdStir Banner -->
-  <div id="adstir_banner">
+  <!-- 下部固定広告（AdStirタグ） -->
+  <div id="adstir_banner" aria-hidden="false">
     <div id="adstir_slot"></div>
 
-    <script>
-      window.adstir_vars = {
+    <script type="text/javascript">
+      var adstir_vars = {
         ver: "4.0",
         app_id: "MEDIA-d51fb80d",
         ad_spot: 1,
         center: false
       };
     </script>
-
-    <script src="https://js.ad-stir.com/js/adstir.js"></script>
+    <script type="text/javascript" src="https://js.ad-stir.com/js/adstir.js"></script>
   </div>
-
 </body>
 </html>
