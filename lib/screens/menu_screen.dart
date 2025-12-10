@@ -31,8 +31,8 @@ class _MenuScreenState extends State<MenuScreen> {
   void initState() {
     super.initState();
 
+    // ★ ここは残してOK（下部広告用の viewType 登録）
     if (kIsWeb) {
-      // ---- AdStir 広告用 viewType 登録 ----
       ui.platformViewRegistry.registerViewFactory(
         'adstir-banner',
         (int viewId) {
@@ -44,7 +44,6 @@ class _MenuScreenState extends State<MenuScreen> {
             ..style.padding = '0'
             ..style.overflow = 'hidden';
 
-          // ① AdStir 本体の div
           final adDiv = html.DivElement()
             ..id = 'adstir_$viewId'
             ..style.width = '320px'
@@ -52,7 +51,6 @@ class _MenuScreenState extends State<MenuScreen> {
 
           container.append(adDiv);
 
-          // ② 設定スクリプト (adstir_vars)
           final configScript = html.ScriptElement()
             ..type = 'text/javascript'
             ..text = '''
@@ -66,7 +64,6 @@ class _MenuScreenState extends State<MenuScreen> {
 
           container.append(configScript);
 
-          // ③ adstir.js 本体をロード
           final jsScript = html.ScriptElement()
             ..type = 'text/javascript'
             ..src = "https://js.ad-stir.com/js/adstir.js";
@@ -157,27 +154,12 @@ class _MenuScreenState extends State<MenuScreen> {
     return Scaffold(
       appBar: AppBar(title: const Text('メニュー')),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.only(
-          top: 0,   // ← 上の余白を削除
-          left: 16,
-          right: 16,
-          bottom: 16,
-        ),
+        padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // ---- AdStir バナー（320×100） ----
-            if (kIsWeb)
-              Padding(
-                padding: const EdgeInsets.only(bottom: 16),
-                child: Center(
-                  child: SizedBox(
-                    width: 320,
-                    height: 100,
-                    child: const HtmlElementView(viewType: 'adstir-banner'),
-                  ),
-                ),
-              ),
+            // ★★ ここにあった上部広告は完全削除 ★★
+            // 広告による高さ100pxの余白も消える
 
             const Text(
               'このアプリは、自分がプレイしたパチスロのデータを記録・管理し、'
