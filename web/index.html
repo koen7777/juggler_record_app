@@ -18,7 +18,7 @@
       box-sizing: border-box;
     }
 
-    /* 最下部固定・中央寄せ広告 */
+    /* 最下部固定・中央寄せ広告（オーバーレイ） */
     #adstir_banner {
       position: fixed;
       bottom: env(safe-area-inset-bottom, 0px);
@@ -27,11 +27,12 @@
       width: 320px;
       max-width: 100%;
       height: 100px;
-      z-index: 99999;
+      z-index: 99999; /* Flutterより前面 */
       display: flex;
       justify-content: center;
       align-items: center;
       background: transparent;
+      pointer-events: auto; /* 広告クリックを有効 */
     }
 
     #adstir_slot {
@@ -50,7 +51,7 @@
     <div id="adstir_slot"></div>
   </div>
 
-  <!-- AdStir 初期化スクリプト（リロード防止） -->
+  <!-- AdStir 初期化スクリプト（リロード防止＆オーバーレイ対応） -->
   <script type="text/javascript">
     if (!window.adstir_initialized) {
       window.adstir_initialized = true;
