@@ -5,15 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Juggler Record App</title>
 
-  <base href="/juggler_record_app/">
+  <!-- IMPORTANT: Flutter build --base-href requires this placeholder -->
+  <base href="$FLUTTER_BASE_HREF">
 
   <style>
-    html, body {
-      margin: 0; padding: 0; height: 100%; box-sizing: border-box;
-    }
-    body {
-      padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 100px);
-    }
+    html, body { margin:0; padding:0; height:100%; box-sizing:border-box; }
+    body { padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 100px); }
 
     #adstir_banner {
       position: fixed;
@@ -41,18 +38,16 @@
 </head>
 <body>
 
-  <!-- Flutter Web 起動 -->
+  <!-- Flutter Web bootstrap (do not change) -->
   <script src="flutter_bootstrap.js"></script>
 
-  <!-- 固定広告 -->
+  <!-- Fixed bottom ad slot -->
   <div id="adstir_banner">
     <div id="adstir_slot"></div>
   </div>
 
   <script>
-    /* -------------------------------------------
-       AdStir ロード（キャッシュ完全回避）
-    -------------------------------------------- */
+    /* Load AdStir with cache-buster and safe re-initialization */
     function loadAdStir() {
       window.adstir_vars = {
         ver: "4.0",
@@ -60,26 +55,18 @@
         ad_spot: 1,
         center: true
       };
-
-      // キャッシュ無効化（?t=timestamp）
-      const script = document.createElement("script");
-      script.src = "https://js.ad-stir.com/js/adstir.js?t=" + Date.now();
-      script.async = true;
-      document.body.appendChild(script);
+      const s = document.createElement("script");
+      s.src = "https://js.ad-stir.com/js/adstir.js?t=" + Date.now();
+      s.async = true;
+      document.body.appendChild(s);
     }
 
-    /* -------------------------------------------
-       ページ読み込み後
-    -------------------------------------------- */
     window.addEventListener("load", () => {
       loadAdStir();
-      // Flutter が DOM を構築した後にも再実行
-      setTimeout(loadAdStir, 600);
+      setTimeout(loadAdStir, 600); // re-run after Flutter initial rendering
     });
 
-    /* -------------------------------------------
-       Flutter が広告を消したら復活
-    -------------------------------------------- */
+    // If Flutter removes the banner element, recreate it and reload ad
     const observer = new MutationObserver(() => {
       if (!document.getElementById("adstir_banner")) {
         const b = document.createElement("div");
@@ -91,13 +78,11 @@
     });
     observer.observe(document.body, { childList: true, subtree: true });
 
-    /* -------------------------------------------
-       Service Worker 完全無効化
-    -------------------------------------------- */
+    // Unregister service workers to avoid stale cached files
     if ("serviceWorker" in navigator) {
       navigator.serviceWorker.getRegistrations().then(regs => {
         regs.forEach(reg => reg.unregister());
-      });
+      }).catch(()=>{/* ignore */});
     }
   </script>
 
