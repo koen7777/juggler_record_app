@@ -1,24 +1,27 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <base href="/juggler_record_app/">
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Juggler Record App</title>
+
+  <!-- Flutter Web 用 base href -->
+  <base href="/juggler_record_app/">
 
   <style>
     html, body {
       height: 100%;
       margin: 0;
       padding: 0;
+      box-sizing: border-box;
     }
 
     /* Flutter アプリ領域の下に広告分の余白を確保 */
     body {
       padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 100px);
-      box-sizing: border-box;
     }
 
-    /* 最下部固定・中央寄せ広告（オーバーレイ） */
+    /* 最下部固定・中央寄せ広告 */
     #adstir_banner {
       position: fixed;
       bottom: env(safe-area-inset-bottom, 0px);
@@ -27,12 +30,12 @@
       width: 320px;
       max-width: 100%;
       height: 100px;
-      z-index: 99999; /* Flutterより前面 */
+      z-index: 99999;
       display: flex;
       justify-content: center;
       align-items: center;
       background: transparent;
-      pointer-events: auto; /* 広告クリックを有効 */
+      pointer-events: auto;
     }
 
     #adstir_slot {
@@ -51,24 +54,57 @@
     <div id="adstir_slot"></div>
   </div>
 
-  <!-- AdStir 初期化スクリプト（リロード防止＆オーバーレイ対応） -->
+  <!-- AdStir 初期化＆復活監視 -->
   <script type="text/javascript">
-    if (!window.adstir_initialized) {
-      window.adstir_initialized = true;
+    function initAdStir() {
+      if (!window.adstir_initialized) {
+        window.adstir_initialized = true;
 
-      window.adstir_vars = {
-        ver: "4.0",
-        app_id: "MEDIA-d51fb80d",
-        ad_spot: 1,
-        center: true
-      };
+        window.adstir_vars = {
+          ver: "4.0",
+          app_id: "MEDIA-d51fb80d",
+          ad_spot: 1,
+          center: true
+        };
 
-      // 広告スクリプトを一度だけ読み込む
-      var s = document.createElement("script");
-      s.src = "https://js.ad-stir.com/js/adstir.js";
-      s.async = true;
-      document.body.appendChild(s);
+        const s = document.createElement("script");
+        s.src = "https://js.ad-stir.com/js/adstir.js";
+        s.async = true;
+        document.body.appendChild(s);
+      }
     }
+
+    // ページロード後に初期化
+    window.addEventListener("load", initAdStir);
+
+    // Flutter が DOM を書き換えて広告が消えた場合に復活させる
+    const observer = new MutationObserver(() => {
+      const banner = document.getElementById("adstir_banner");
+      if (!banner) {
+        const newBanner = document.createElement("div");
+        newBanner.id = "adstir_banner";
+        newBanner.innerHTML = '<div id="adstir_slot"></div>';
+        Object.assign(newBanner.style, {
+          position: 'fixed',
+          bottom: 'env(safe-area-inset-bottom, 0px)',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          width: '320px',
+          maxWidth: '100%',
+          height: '100px',
+          zIndex: 99999,
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          background: 'transparent',
+          pointerEvents: 'auto'
+        });
+        document.body.appendChild(newBanner);
+        initAdStir(); // スクリプトは再読み込みされない
+      }
+    });
+
+    observer.observe(document.body, { childList: true, subtree: true });
   </script>
 </body>
 </html>
