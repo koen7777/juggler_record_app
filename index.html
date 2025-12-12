@@ -47,32 +47,34 @@
 
   <script>
     /* =============================
-       常に広告が出るようにする
+       AdStir を確実に読み込む関数
        ============================= */
-
-    // AdStir ロード
     function loadAdStir() {
-      // キャッシュ防止（?t=timestamp）
-      const script = document.createElement("script");
-      script.src = "https://js.ad-stir.com/js/adstir.js?t=" + Date.now();
-      script.async = true;
-      document.body.appendChild(script);
-
       window.adstir_vars = {
         ver: "4.0",
         app_id: "MEDIA-d51fb80d",
         ad_spot: 1,
         center: true
       };
+
+      // キャッシュを絶対に避ける
+      const script = document.createElement("script");
+      script.src = "https://js.ad-stir.com/js/adstir.js?t=" + Date.now();
+      script.async = true;
+      document.body.appendChild(script);
     }
 
-    // ページ読み込み後に確実に初期化
+    /* =============================
+       ページ読み込み直後に実行
+       ============================= */
     window.addEventListener("load", () => {
       loadAdStir();
-      setTimeout(loadAdStir, 600); // Flutter描画後に再注入
+      setTimeout(loadAdStir, 600); // Flutter DOM が出揃った後
     });
 
-    // Flutterが DOM を書き換えて広告を消したら復活
+    /* =============================
+       Flutter が広告を消したら即復活
+       ============================= */
     const observer = new MutationObserver(() => {
       if (!document.getElementById("adstir_banner")) {
         const b = document.createElement("div");
@@ -85,7 +87,7 @@
     observer.observe(document.body, { childList: true, subtree: true });
 
     /* =============================
-       Service Worker 無効化
+       Service Worker 完全無効化
        ============================= */
     if ("serviceWorker" in navigator) {
       navigator.serviceWorker.getRegistrations().then(regs => {
