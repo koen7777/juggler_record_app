@@ -5,10 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Juggler Record App</title>
 
-<<<<<<< HEAD
   <!-- IMPORTANT: Flutter build --base-href requires this placeholder -->
-=======
->>>>>>> c668aad8fb3bdb1db383ad42b8713da066e081c4
   <base href="/juggler_record_app/">
 
   <style>
@@ -41,29 +38,16 @@
 </head>
 <body>
 
-<<<<<<< HEAD
   <!-- Flutter Web bootstrap (do not change) -->
   <script src="flutter_bootstrap.js"></script>
 
   <!-- Fixed bottom ad slot -->
-=======
-  <!-- Flutter Web 起動 -->
-  <script src="flutter_bootstrap.js"></script>
-
-  <!-- 固定広告 -->
->>>>>>> c668aad8fb3bdb1db383ad42b8713da066e081c4
   <div id="adstir_banner">
     <div id="adstir_slot"></div>
   </div>
 
   <script>
-<<<<<<< HEAD
     /* Load AdStir with cache-buster and safe re-initialization */
-=======
-    /* =============================
-       AdStir を確実に読み込む関数
-       ============================= */
->>>>>>> c668aad8fb3bdb1db383ad42b8713da066e081c4
     function loadAdStir() {
       window.adstir_vars = {
         ver: "4.0",
@@ -71,7 +55,6 @@
         ad_spot: 1,
         center: true
       };
-<<<<<<< HEAD
       const s = document.createElement("script");
       s.src = "https://js.ad-stir.com/js/adstir.js?t=" + Date.now();
       s.async = true;
@@ -84,27 +67,6 @@
     });
 
     // If Flutter removes the banner element, recreate it and reload ad
-=======
-
-      // キャッシュを絶対に避ける
-      const script = document.createElement("script");
-      script.src = "https://js.ad-stir.com/js/adstir.js?t=" + Date.now();
-      script.async = true;
-      document.body.appendChild(script);
-    }
-
-    /* =============================
-       ページ読み込み直後に実行
-       ============================= */
-    window.addEventListener("load", () => {
-      loadAdStir();
-      setTimeout(loadAdStir, 600); // Flutter DOM が出揃った後
-    });
-
-    /* =============================
-       Flutter が広告を消したら即復活
-       ============================= */
->>>>>>> c668aad8fb3bdb1db383ad42b8713da066e081c4
     const observer = new MutationObserver(() => {
       if (!document.getElementById("adstir_banner")) {
         const b = document.createElement("div");
@@ -116,21 +78,11 @@
     });
     observer.observe(document.body, { childList: true, subtree: true });
 
-<<<<<<< HEAD
     // Unregister service workers to avoid stale cached files
     if ("serviceWorker" in navigator) {
       navigator.serviceWorker.getRegistrations().then(regs => {
         regs.forEach(reg => reg.unregister());
       }).catch(()=>{/* ignore */});
-=======
-    /* =============================
-       Service Worker 完全無効化
-       ============================= */
-    if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.getRegistrations().then(regs => {
-        regs.forEach(reg => reg.unregister());
-      });
->>>>>>> c668aad8fb3bdb1db383ad42b8713da066e081c4
     }
   </script>
 
