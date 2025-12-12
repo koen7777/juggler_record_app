@@ -5,8 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Juggler Record App</title>
 
-  <!-- GitHub Pages 配置用 base href -->
-  <base href="/juggler_record_app/">
+  <!-- Flutter Web がビルド時に置換する placeholder -->
+  <base href="$FLUTTER_BASE_HREF">
 
   <style>
     html, body { margin:0; padding:0; height:100%; box-sizing:border-box; }
@@ -64,7 +64,7 @@
       setTimeout(initAdStir, 500); // Flutter描画後に再初期化
     });
 
-    // Flutter画面遷移でも広告復活
+    // Flutter画面遷移でも広告が消えないよう監視
     const observer = new MutationObserver(() => {
       const banner = document.getElementById("adstir_banner");
       if (!banner) {
@@ -98,7 +98,7 @@
       navigator.serviceWorker.getRegistrations().then(regs => {
         regs.forEach(reg => reg.unregister());
       }).finally(() => {
-        // Flutter の Service Worker 登録
+        // Flutter の Service Worker 再登録
         if (window._flutter && _flutter.loader) {
           _flutter.loader.load({
             serviceWorkerSettings: {
