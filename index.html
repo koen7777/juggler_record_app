@@ -5,7 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Juggler Record App</title>
 
-  <!-- IMPORTANT: Flutter build --base-href requires this placeholder -->
+  <!-- Flutter build --base-href requires this placeholder -->
+  <!-- 変更/追加ポイント: Flutter Web のビルド時に --base-href を反映させるために /juggler_record_app/ プレースホルダーに変更 -->
   <base href="/juggler_record_app/">
 
   <style>
@@ -38,16 +39,20 @@
 </head>
 <body>
 
-  <!-- Flutter Web bootstrap (do not change) -->
+  <!-- Flutter Web bootstrap (必須) -->
   <script src="flutter_bootstrap.js"></script>
 
-  <!-- Fixed bottom ad slot -->
+  <!-- Flutter main JavaScript (必須) -->
+  <!-- 追加ポイント: Flutter アプリのメイン実行ファイル。これがないとアプリが動かない -->
+  <script src="main.dart.js" type="application/javascript"></script>
+
+  <!-- AdStir banner -->
   <div id="adstir_banner">
     <div id="adstir_slot"></div>
   </div>
 
   <script>
-    /* Load AdStir with cache-buster and safe re-initialization */
+    /* AdStir を確実に読み込む関数 */
     function loadAdStir() {
       window.adstir_vars = {
         ver: "4.0",
@@ -55,18 +60,20 @@
         ad_spot: 1,
         center: true
       };
+      // 追加ポイント: キャッシュ回避のため timestamp を付与してスクリプトを動的追加
       const s = document.createElement("script");
       s.src = "https://js.ad-stir.com/js/adstir.js?t=" + Date.now();
       s.async = true;
       document.body.appendChild(s);
     }
 
+    // ページ読み込み後に広告を初期化
     window.addEventListener("load", () => {
       loadAdStir();
-      setTimeout(loadAdStir, 600); // re-run after Flutter initial rendering
+      setTimeout(loadAdStir, 600); // Flutter DOM が描画された後に再ロード
     });
 
-    // If Flutter removes the banner element, recreate it and reload ad
+    // Flutter が広告を消した場合の復活処理
     const observer = new MutationObserver(() => {
       if (!document.getElementById("adstir_banner")) {
         const b = document.createElement("div");
@@ -78,11 +85,11 @@
     });
     observer.observe(document.body, { childList: true, subtree: true });
 
-    // Unregister service workers to avoid stale cached files
+    // Service Worker 無効化
     if ("serviceWorker" in navigator) {
       navigator.serviceWorker.getRegistrations().then(regs => {
         regs.forEach(reg => reg.unregister());
-      }).catch(()=>{/* ignore */});
+      });
     }
   </script>
 
