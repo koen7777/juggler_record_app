@@ -5,8 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Juggler Record App</title>
 
-  <!-- Flutter build --base-href placeholder -->
-  <base href="/juggler_record_app/">
+  <!-- Flutter build --base-href requires this placeholder -->
+  <!-- 変更/追加ポイント: Flutter Web のビルド時に --base-href を反映させるために $FLUTTER_BASE_HREF プレースホルダーに変更 -->
+  <base href="$FLUTTER_BASE_HREF">
 
   <style>
     html, body { margin:0; padding:0; height:100%; box-sizing:border-box; }
@@ -38,27 +39,20 @@
 </head>
 <body>
 
-  <!-- ============================= -->
-  <!-- Flutter bootstrap (必須) -->
+  <!-- Flutter Web bootstrap (必須) -->
   <script src="flutter_bootstrap.js"></script>
 
-  <!-- ============================= -->
-  <!-- ここから追加した行 -->
-  <!-- Flutter main JavaScript を直接読み込む -->
-  <!-- 追加理由: Flutter Web アプリを動かす main.dart.js が必要なため -->
+  <!-- Flutter main JavaScript (必須) -->
+  <!-- 追加ポイント: Flutter アプリのメイン実行ファイル。これがないとアプリが動かない -->
   <script src="main.dart.js" type="application/javascript"></script>
-  <!-- ここまで追加 -->
 
-  <!-- ============================= -->
-  <!-- AdStir 広告 -->
+  <!-- AdStir banner -->
   <div id="adstir_banner">
     <div id="adstir_slot"></div>
   </div>
 
   <script>
-    /* =============================
-       AdStir 読み込み関数
-       ============================= */
+    /* AdStir を確実に読み込む関数 */
     function loadAdStir() {
       window.adstir_vars = {
         ver: "4.0",
@@ -66,23 +60,20 @@
         ad_spot: 1,
         center: true
       };
+      // 追加ポイント: キャッシュ回避のため timestamp を付与してスクリプトを動的追加
       const s = document.createElement("script");
-      s.src = "https://js.ad-stir.com/js/adstir.js?t=" + Date.now(); // キャッシュ防止
+      s.src = "https://js.ad-stir.com/js/adstir.js?t=" + Date.now();
       s.async = true;
       document.body.appendChild(s);
     }
 
-    /* =============================
-       ページロード時に広告読み込み
-       ============================= */
+    // ページ読み込み後に広告を初期化
     window.addEventListener("load", () => {
       loadAdStir();
-      setTimeout(loadAdStir, 600); // Flutter 描画後に再実行
+      setTimeout(loadAdStir, 600); // Flutter DOM が描画された後に再ロード
     });
 
-    /* =============================
-       Flutter が広告を消した場合の復活処理
-       ============================= */
+    // Flutter が広告を消した場合の復活処理
     const observer = new MutationObserver(() => {
       if (!document.getElementById("adstir_banner")) {
         const b = document.createElement("div");
@@ -94,9 +85,7 @@
     });
     observer.observe(document.body, { childList: true, subtree: true });
 
-    /* =============================
-       Service Worker 完全無効化
-       ============================= */
+    // Service Worker 無効化
     if ("serviceWorker" in navigator) {
       navigator.serviceWorker.getRegistrations().then(regs => {
         regs.forEach(reg => reg.unregister());
