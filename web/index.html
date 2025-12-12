@@ -34,13 +34,15 @@
       display: flex;
       justify-content: center;
       align-items: center;
-      background: transparent;
+      background: #ffffff; /* 白背景で広告枠を確認しやすく */
       pointer-events: auto;
+      box-shadow: 0 0 5px rgba(0,0,0,0.2);
     }
 
     #adstir_slot {
       width: 320px;
       height: 100px;
+      background: #ffffff; /* 読み込み前のスペース確保 */
     }
   </style>
 </head>
@@ -54,7 +56,6 @@
     <div id="adstir_slot"></div>
   </div>
 
-  <!-- AdStir 初期化＆復活監視 -->
   <script type="text/javascript">
     function initAdStir() {
       if (!window.adstir_initialized) {
@@ -75,7 +76,15 @@
     }
 
     // ページロード後に初期化
-    window.addEventListener("load", initAdStir);
+    window.addEventListener("load", () => {
+      initAdStir();
+
+      // Flutter Web の初回描画後にも再初期化
+      if (window.flutterWebRenderer) {
+        // Flutter 初回フレーム後に少し遅延して再初期化
+        setTimeout(initAdStir, 500);
+      }
+    });
 
     // Flutter が DOM を書き換えて広告が消えた場合に復活させる
     const observer = new MutationObserver(() => {
@@ -96,11 +105,12 @@
           display: 'flex',
           justifyContent: 'center',
           alignItems: 'center',
-          background: 'transparent',
-          pointerEvents: 'auto'
+          background: '#ffffff',
+          pointerEvents: 'auto',
+          boxShadow: '0 0 5px rgba(0,0,0,0.2)'
         });
         document.body.appendChild(newBanner);
-        initAdStir(); // スクリプトは再読み込みされない
+        initAdStir(); // 再初期化（スクリプトは1回だけ）
       }
     });
 
