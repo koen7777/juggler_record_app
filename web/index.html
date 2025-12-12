@@ -1,27 +1,27 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Juggler Record App</title>
 
-  <!-- Flutter Web 用 base href -->
-  <base href="$FLUTTER_BASE_HREF">
+  <!-- GitHub Pages 配置用 base href -->
+  <base href="/juggler_record_app/">
 
   <style>
     html, body {
-      height: 100%;
       margin: 0;
       padding: 0;
+      height: 100%;
       box-sizing: border-box;
     }
 
-    /* Flutter アプリ領域の下に広告分の余白を確保 */
+    /* Flutter Web 画面下に広告スペース確保 */
     body {
       padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 100px);
     }
 
-    /* 最下部固定・中央寄せ広告 */
+    /* 最下部固定広告 */
     #adstir_banner {
       position: fixed;
       bottom: env(safe-area-inset-bottom, 0px);
@@ -34,7 +34,7 @@
       display: flex;
       justify-content: center;
       align-items: center;
-      background: #ffffff; /* 白背景で広告枠を確認しやすく */
+      background: #ffffff; /* 広告枠確認用 */
       pointer-events: auto;
       box-shadow: 0 0 5px rgba(0,0,0,0.2);
     }
@@ -42,13 +42,13 @@
     #adstir_slot {
       width: 320px;
       height: 100px;
-      background: #ffffff; /* 読み込み前のスペース確保 */
+      background: #ffffff;
     }
   </style>
 </head>
-
 <body>
-  <!-- Flutter 起動 -->
+
+  <!-- Flutter Web 起動 -->
   <script src="flutter_bootstrap.js" async></script>
 
   <!-- 最下部固定広告 -->
@@ -56,6 +56,7 @@
     <div id="adstir_slot"></div>
   </div>
 
+  <!-- AdStir 初期化 -->
   <script type="text/javascript">
     function initAdStir() {
       if (!window.adstir_initialized) {
@@ -78,15 +79,10 @@
     // ページロード後に初期化
     window.addEventListener("load", () => {
       initAdStir();
-
-      // Flutter Web の初回描画後にも再初期化
-      if (window.flutterWebRenderer) {
-        // Flutter 初回フレーム後に少し遅延して再初期化
-        setTimeout(initAdStir, 500);
-      }
+      setTimeout(initAdStir, 500); // Flutter描画後に再初期化
     });
 
-    // Flutter が DOM を書き換えて広告が消えた場合に復活させる
+    // Flutter 画面切り替えで広告が消えた場合に復活
     const observer = new MutationObserver(() => {
       const banner = document.getElementById("adstir_banner");
       if (!banner) {
@@ -110,11 +106,14 @@
           boxShadow: '0 0 5px rgba(0,0,0,0.2)'
         });
         document.body.appendChild(newBanner);
-        initAdStir(); // 再初期化（スクリプトは1回だけ）
+        initAdStir();
       }
     });
-
     observer.observe(document.body, { childList: true, subtree: true });
   </script>
+
+  <!-- Service Worker キャッシュ問題対策 -->
+  <!-- DevTools → Application → Service Workers → Unregister を推奨 -->
+
 </body>
 </html>
