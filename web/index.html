@@ -5,12 +5,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Juggler Record App</title>
 
-  <!-- Flutter Web がビルド時に置換する placeholder -->
-  <base href="$FLUTTER_BASE_HREF">
+  <base href="/juggler_record_app/">
 
   <style>
-    html, body { margin:0; padding:0; height:100%; box-sizing:border-box; }
-    body { padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 100px); }
+    html, body {
+      margin: 0; padding: 0; height: 100%; box-sizing: border-box;
+    }
+    body {
+      padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 100px);
+    }
+
     #adstir_banner {
       position: fixed;
       bottom: env(safe-area-inset-bottom, 0px);
@@ -27,87 +31,75 @@
       pointer-events: auto;
       box-shadow: 0 0 5px rgba(0,0,0,0.2);
     }
-    #adstir_slot { width: 320px; height: 100px; background:#ffffff; }
+
+    #adstir_slot {
+      width: 320px;
+      height: 100px;
+      background: #ffffff;
+    }
   </style>
 </head>
 <body>
 
   <!-- Flutter Web 起動 -->
-  <script src="flutter_bootstrap.js" async></script>
+  <script src="flutter_bootstrap.js"></script>
 
-  <!-- 最下部固定広告 -->
+  <!-- 固定広告 -->
   <div id="adstir_banner">
     <div id="adstir_slot"></div>
   </div>
 
-  <!-- AdStir 初期化 -->
-  <script type="text/javascript">
-    function initAdStir() {
-      if (!window.adstir_initialized) {
-        window.adstir_initialized = true;
-        window.adstir_vars = {
-          ver: "4.0",
-          app_id: "MEDIA-d51fb80d",
-          ad_spot: 1,
-          center: true
-        };
-        const s = document.createElement("script");
-        s.src = "https://js.ad-stir.com/js/adstir.js";
-        s.async = true;
-        document.body.appendChild(s);
-      }
+  <script>
+    /* -------------------------------------------
+       AdStir ロード（キャッシュ完全回避）
+    -------------------------------------------- */
+    function loadAdStir() {
+      window.adstir_vars = {
+        ver: "4.0",
+        app_id: "MEDIA-d51fb80d",
+        ad_spot: 1,
+        center: true
+      };
+
+      // キャッシュ無効化（?t=timestamp）
+      const script = document.createElement("script");
+      script.src = "https://js.ad-stir.com/js/adstir.js?t=" + Date.now();
+      script.async = true;
+      document.body.appendChild(script);
     }
 
-    // ページロード後に初期化
+    /* -------------------------------------------
+       ページ読み込み後
+    -------------------------------------------- */
     window.addEventListener("load", () => {
-      initAdStir();
-      setTimeout(initAdStir, 500); // Flutter描画後に再初期化
+      loadAdStir();
+      // Flutter が DOM を構築した後にも再実行
+      setTimeout(loadAdStir, 600);
     });
 
-    // Flutter画面遷移でも広告が消えないよう監視
+    /* -------------------------------------------
+       Flutter が広告を消したら復活
+    -------------------------------------------- */
     const observer = new MutationObserver(() => {
-      const banner = document.getElementById("adstir_banner");
-      if (!banner) {
-        const newBanner = document.createElement("div");
-        newBanner.id = "adstir_banner";
-        newBanner.innerHTML = '<div id="adstir_slot"></div>';
-        Object.assign(newBanner.style, {
-          position: 'fixed',
-          bottom: 'env(safe-area-inset-bottom, 0px)',
-          left: '50%',
-          transform: 'translateX(-50%)',
-          width: '320px',
-          maxWidth: '100%',
-          height: '100px',
-          zIndex: 99999,
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          background: '#ffffff',
-          pointerEvents: 'auto',
-          boxShadow: '0 0 5px rgba(0,0,0,0.2)'
-        });
-        document.body.appendChild(newBanner);
-        initAdStir();
+      if (!document.getElementById("adstir_banner")) {
+        const b = document.createElement("div");
+        b.id = "adstir_banner";
+        b.innerHTML = '<div id="adstir_slot"></div>';
+        document.body.appendChild(b);
+        loadAdStir();
       }
     });
-    observer.observe(document.body, { childList:true, subtree:true });
+    observer.observe(document.body, { childList: true, subtree: true });
 
-    // Service Worker キャッシュ対策
-    if ('serviceWorker' in navigator) {
+    /* -------------------------------------------
+       Service Worker 完全無効化
+    -------------------------------------------- */
+    if ("serviceWorker" in navigator) {
       navigator.serviceWorker.getRegistrations().then(regs => {
         regs.forEach(reg => reg.unregister());
-      }).finally(() => {
-        // Flutter の Service Worker 再登録
-        if (window._flutter && _flutter.loader) {
-          _flutter.loader.load({
-            serviceWorkerSettings: {
-              serviceWorkerVersion: "920525245"
-            }
-          });
-        }
       });
     }
   </script>
+
 </body>
 </html>
